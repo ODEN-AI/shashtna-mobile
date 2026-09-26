@@ -22,7 +22,7 @@ export function NextActionCard({ action, renewSlug }: { action: NextAction; rene
   const go = () => {
     if (action.orderId) return router.push(`/orders/${action.orderId}`);
     if (action.kind === 'RENEW' && renewSlug && action.subscriptionId) {
-      return router.push({ pathname: '/packages/[slug]', params: { slug: renewSlug, renew: String(action.subscriptionId) } });
+      return router.push({ pathname: '/checkout', params: { renew: String(action.subscriptionId) } });
     }
     if (action.subscriptionId) return router.push(`/subscriptions/${action.subscriptionId}`);
     return router.push('/packages');

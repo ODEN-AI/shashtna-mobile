@@ -60,10 +60,10 @@ function Body({ data }: { data: SubscriptionDetail }) {
             title="تجديد"
             icon="refresh"
             style={{ flex: 1 }}
-            onPress={() => router.push({ pathname: '/packages/[slug]', params: { slug: subscription.packageSlug!, renew: String(subscription.id) } })}
+            onPress={() => router.push({ pathname: '/checkout', params: { renew: String(subscription.id) } })}
           />
         ) : null}
-        <Button title="ترقية" icon="trending-up" variant="secondary" style={{ flex: 1 }} onPress={() => router.push('/packages')} />
+        <Button title="ترقية" icon="trending-up" variant="secondary" style={{ flex: 1 }} onPress={() => router.push({ pathname: '/packages', params: { upgrade: String(subscription.id) } })} />
       </View>
 
       {credentials && (credentials.username || credentials.password || credentials.macAddress) ? (

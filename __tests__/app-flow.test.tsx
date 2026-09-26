@@ -57,16 +57,26 @@ describe('customer journey (router + providers + API client)', () => {
     fireEvent.press(screen.getByText('IPTV سنة'));
 
     fireEvent.press(await screen.findByTestId('order-package'));
-    fireEvent.press(await screen.findByTestId('confirm-order'));
 
-    // The order is created on the server without a client price, then the payment step opens.
+    // Checkout: same sections as the website, contact method chosen per order.
+    await screen.findByText('بيانات العميل');
+    expect((await screen.findAllByText('طريقة التواصل')).length).toBe(2);
+    fireEvent.press(screen.getByTestId('contact-PHONE'));
+    fireEvent.press(screen.getByTestId('confirm-order'));
+
+    // The order is created without any client price, with the chosen contact method.
     await waitFor(() => expect(backend.state.calls.some((call) => call.path === '/api/mobile/orders' && call.method === 'POST')).toBe(true));
     const created = backend.state.calls.find((call) => call.path === '/api/mobile/orders' && call.method === 'POST')!.body as Record<string, unknown>;
-    expect(created).toEqual({ requestType: 'NEW', planSlug: 'iptv-year' });
+    expect(created).toEqual({ requestType: 'NEW', planSlug: 'iptv-year', contactMethod: 'PHONE' });
 
-    await screen.findByText('ادفع بالتحويل');
+    // Then the dashboard, highlighting the new order with its payment step.
+    await screen.findByText('تم إنشاء طلبك ✅ الخطوة التالية: إتمام الدفع');
+    expect(backend.state.calls.some((call) => call.path === '/api/mobile/dashboard?order=12')).toBe(true);
+    await screen.findByText('طلب قيد المتابعة');
+    expect(screen.getByText('ادفع بالتحويل')).toBeTruthy();
     expect(screen.getByText('9286253712')).toBeTruthy();
     expect(screen.getAllByText('25,000 د.ع').length).toBeGreaterThan(0);
+    expect(screen.getPathname()).toBe('/');
   });
 
   it('tapping a push opens its typed destination and marks it read', async () => {

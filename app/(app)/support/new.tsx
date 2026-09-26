@@ -1,10 +1,9 @@
-import * as Device from 'expo-device';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { errorMessage } from '@/src/api/client';
-import { APP_VERSION } from '@/src/lib/config';
+import { collectDiagnostics } from '@/src/lib/diagnostics';
 import { useCreateTicket, useHelp } from '@/src/query/hooks';
 import { Button } from '@/src/ui/Button';
 import { Field } from '@/src/ui/Field';
@@ -48,7 +47,7 @@ export default function NewTicketScreen() {
         orderId: Number(params.orderId) || undefined,
         subscriptionId: Number(params.subscriptionId) || undefined,
         // Only non-sensitive facts that help support reproduce the issue.
-        diagnostics: { appVersion: APP_VERSION, os: `${Platform.OS} ${Platform.Version}`, device: Device.modelName ?? null },
+        diagnostics: await collectDiagnostics(),
       });
 
       toast('تم فتح التذكرة ✅');
@@ -97,7 +96,7 @@ export default function NewTicketScreen() {
         placeholder="اشرح المشكلة، ومتى تصير، وعلى أي جهاز."
       />
       <Text variant="caption" color={colors.ink3}>
-        نرفق تلقائيًا إصدار التطبيق ونوع الجهاز حتى نساعدك أسرع. ما نرسل أي بيانات حساسة.
+        نرفق تلقائيًا إصدار التطبيق ونوع الجهاز ونوع الشبكة وآخر خطأ بالتطبيق حتى نساعدك أسرع. ما نرسل أي بيانات حساسة.
       </Text>
     </Screen>
   );

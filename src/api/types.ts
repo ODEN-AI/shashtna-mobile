@@ -196,7 +196,8 @@ export type Dashboard = {
   accountState: AccountState;
   primarySubscription: Subscription | null;
   subscriptionsCount: number;
-  currentOrder: Order | null;
+  /** The order to follow: just created, else newest open — with payment details. */
+  currentOrder: OrderDetail | null;
   openOrdersCount: number;
   nextAction: NextAction | null;
   unreadNotifications: number;
@@ -245,4 +246,30 @@ export type Help = {
   troubleshooting: { id: string; category: string; title: string; symptoms: string; steps: string[] }[];
   categories: { value: string; label: string }[];
   support: { hours: string | null; telegram: string | null; whatsapp: string | null; facebook: string | null; phone: string | null };
+};
+
+export type ContactOption = 'TELEGRAM' | 'WHATSAPP' | 'FACEBOOK' | 'PHONE';
+
+export type CheckoutDevice = { id: number; name: string; price: number; description: string; imageUrl: string | null };
+
+/** The order confirmation, resolved by the same service as the website checkout. */
+export type Checkout = {
+  mode: RequestType;
+  customer: { name: string; phone: string };
+  plan: {
+    slug: string;
+    name: string;
+    serviceType: ServiceType;
+    price: number;
+    durationLabel: string;
+    description: string;
+    features: string[];
+    imageUrl: string | null;
+  } | null;
+  device: CheckoutDevice | null;
+  devices: CheckoutDevice[];
+  initialDeviceId: number | null;
+  subscription: { id: number; packageName: string } | null;
+  contactOptions: ContactOption[];
+  initialContact: ContactOption;
 };

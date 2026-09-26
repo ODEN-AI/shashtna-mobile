@@ -21,9 +21,11 @@ type PushContextValue = {
   permission: PushPermission;
   /** Ask (or, once denied, open system settings). */
   enable: () => Promise<void>;
+  /** Registers this phone again (push check screen). */
+  reregister: () => Promise<void>;
 };
 
-const PushContext = createContext<PushContextValue>({ permission: 'unavailable', enable: async () => undefined });
+const PushContext = createContext<PushContextValue>({ permission: 'unavailable', enable: async () => undefined, reregister: async () => undefined });
 
 const ASKED_KEY = 'shashtna.push.asked';
 
@@ -157,7 +159,7 @@ export function PushProvider({ children }: { children: ReactNode }) {
     if (next === 'granted') await register();
   }, [permission, register]);
 
-  const value = useMemo(() => ({ permission, enable }), [permission, enable]);
+  const value = useMemo(() => ({ permission, enable, reregister: register }), [permission, enable, register]);
 
   return <PushContext.Provider value={value}>{children}</PushContext.Provider>;
 }

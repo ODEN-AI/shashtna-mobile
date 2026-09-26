@@ -13,6 +13,7 @@ module.exports = {
   transform: { '^.+\\.[jt]sx?$': ['babel-jest', { presets: [babelPresetExpo] }] },
   moduleNameMapper: {
     '^@/src/lib/config$': '<rootDir>/tests/backend/config.ts',
+    '^@/src/lib/diagnostics$': '<rootDir>/tests/backend/diagnostics.ts',
     '^@/(.*)$': '<rootDir>/$1',
   },
   testTimeout: 60_000,

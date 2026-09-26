@@ -7,7 +7,7 @@ export type NewTicketInput = {
   message: string;
   orderId?: number;
   subscriptionId?: number;
-  diagnostics?: { appVersion: string; os: string; device: string | null };
+  diagnostics?: { appVersion: string; os: string; device: string | null; network: string; lastError: string | null };
 };
 
 export const supportApi = {

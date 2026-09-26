@@ -1,5 +1,5 @@
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, Stack, ThemeProvider, type ErrorBoundaryProps } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
@@ -8,8 +8,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, useAuth } from '@/src/auth/AuthProvider';
 import { APP_VERSION } from '@/src/lib/config';
+import { recordError } from '@/src/lib/diagnostics';
 import { PushProvider } from '@/src/push/PushProvider';
 import { createQueryClient, persister, shouldPersistQuery, wireQueryToDevice } from '@/src/query/client';
+import { Button } from '@/src/ui/Button';
+import { EmptyState } from '@/src/ui/States';
 import { ToastProvider } from '@/src/ui/Toast';
 import { colors } from '@/src/ui/theme';
 
@@ -90,6 +93,26 @@ export default function RootLayout() {
           </PushProvider>
         </AuthProvider>
       </PersistQueryClientProvider>
+    </SafeAreaProvider>
+  );
+}
+
+/**
+ * Last line of defence: a render error shows a recoverable screen instead of
+ * closing the app, and is remembered (scrubbed) for support diagnostics.
+ */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  useEffect(() => recordError('render', error), [error]);
+
+  return (
+    <SafeAreaProvider style={{ backgroundColor: colors.canvas }}>
+      <EmptyState
+        icon="warning-outline"
+        tone="danger"
+        title="صار خطأ غير متوقع"
+        body="حاول مرة ثانية. إذا تكرر، افتح تذكرة دعم وراح نشوف السبب."
+        action={<Button title="إعادة المحاولة" icon="refresh" onPress={() => void retry()} />}
+      />
     </SafeAreaProvider>
   );
 }

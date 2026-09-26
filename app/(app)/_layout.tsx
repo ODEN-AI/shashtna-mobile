@@ -17,6 +17,8 @@ export default function AppLayout() {
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="packages/[slug]" options={{ title: 'تفاصيل الباقة' }} />
+      <Stack.Screen name="checkout" options={{ title: 'تأكيد الطلب' }} />
+      <Stack.Screen name="account/notifications-check" options={{ title: 'فحص الإشعارات' }} />
       <Stack.Screen name="orders/[id]" options={{ title: 'تفاصيل الطلب' }} />
       <Stack.Screen name="subscriptions/index" options={{ title: 'اشتراكاتي' }} />
       <Stack.Screen name="subscriptions/[id]" options={{ title: 'تفاصيل الاشتراك' }} />

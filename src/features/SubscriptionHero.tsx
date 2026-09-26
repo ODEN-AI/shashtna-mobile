@@ -54,7 +54,7 @@ export function SubscriptionHero({
                 title="تجديد"
                 icon="refresh"
                 compact
-                onPress={() => router.push({ pathname: '/packages/[slug]', params: { slug: subscription.packageSlug!, renew: String(subscription.id) } })}
+                onPress={() => router.push({ pathname: '/checkout', params: { renew: String(subscription.id) } })}
                 style={{ flex: 1 }}
               />
             ) : null}
@@ -63,8 +63,7 @@ export function SubscriptionHero({
       ) : state === 'PENDING' && order ? (
         <>
           <Text variant="title">{order.serviceName}</Text>
-          <Text color={colors.ink2}>{ORDER_STAGE[order.stage].label}</Text>
-          <Button title="متابعة الطلب" icon="arrow-back" onPress={() => router.push(`/orders/${order.id}`)} />
+          <Text color={colors.ink2}>{ORDER_STAGE[order.stage].label} — تفاصيل الدفع تحت.</Text>
         </>
       ) : (
         <>

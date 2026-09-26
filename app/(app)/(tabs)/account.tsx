@@ -75,6 +75,7 @@ export default function AccountScreen() {
                 )
               }
             />
+            <ListRow icon="pulse-outline" tone="info" title="فحص الإشعارات" subtitle="تأكد إن هاتفك يستلم إشعارات شاشتنا" onPress={() => router.push('/account/notifications-check')} />
             <Toggle
               title="تذكير قبل انتهاء الاشتراك"
               value={user.renewalReminders}
@@ -94,6 +95,30 @@ export default function AccountScreen() {
               onPress={() => router.push('/account/profile')}
             />
             <ListRow icon="key-outline" title="تغيير كلمة المرور" onPress={() => router.push('/account/password')} />
+            <ListRow
+              icon="phone-portrait-outline"
+              tone="warning"
+              title="تسجيل الخروج من كل الأجهزة"
+              subtitle="إذا ضاع هاتفك أو دخلت من جهاز مو إلك"
+              onPress={() =>
+                Alert.alert('تسجيل الخروج من كل الأجهزة؟', 'راح ينطفي دخولك بالموقع وبكل الهواتف، وتوقف الإشعارات عليها.', [
+                  { text: 'رجوع', style: 'cancel' },
+                  {
+                    text: 'خروج من الكل',
+                    style: 'destructive',
+                    onPress: async () => {
+                      try {
+                        await authApi.logoutAll();
+                      } catch (error) {
+                        toast(errorMessage(error), 'error');
+                        return;
+                      }
+                      void signOut('تم تسجيل الخروج من كل الأجهزة.');
+                    },
+                  },
+                ])
+              }
+            />
             <ListRow icon="document-text-outline" tone="neutral" title="الشروط والأحكام" onPress={() => void Linking.openURL(`${API_BASE_URL}/terms`)} />
             <ListRow icon="shield-outline" tone="neutral" title="سياسة الخصوصية" onPress={() => void Linking.openURL(`${API_BASE_URL}/privacy`)} />
           </Card>

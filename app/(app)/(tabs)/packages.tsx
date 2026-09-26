@@ -1,3 +1,4 @@
+import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -5,7 +6,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { ServiceType } from '@/src/api/types';
 import { OfferCarousel } from '@/src/features/ContentCards';
 import { PackageCard } from '@/src/features/PackageCard';
+import { formatPrice } from '@/src/lib/format';
 import { useCatalog, useContent } from '@/src/query/hooks';
+import { Card } from '@/src/ui/Card';
+import { IconWell } from '@/src/ui/IconWell';
 import { QueryBoundary } from '@/src/ui/QueryBoundary';
 import { Screen } from '@/src/ui/Screen';
 import { Section } from '@/src/ui/Section';
@@ -15,6 +19,9 @@ import { colors, radius, space } from '@/src/ui/theme';
 
 /** Plans exactly as the admin configured them on the website. */
 export default function PackagesScreen() {
+  // Arriving from a subscription: pick the plan to upgrade (or renew) to.
+  const params = useLocalSearchParams<{ upgrade?: string; renew?: string }>();
+  const context = params.upgrade ? { upgrade: params.upgrade } : params.renew ? { renew: params.renew } : undefined;
   const catalog = useCatalog();
   const content = useContent();
   const [type, setType] = useState<ServiceType | 'ALL'>('ALL');
@@ -31,7 +38,7 @@ export default function PackagesScreen() {
           void content.refetch();
         }}
       >
-        <Text variant="title">الباقات</Text>
+        <Text variant="title">{context?.upgrade ? 'اختار باقة الترقية' : context?.renew ? 'اختار باقة التجديد' : 'الباقات'}</Text>
 
         {content.data?.offers.length ? (
           <Section title="عروض حالية">
@@ -64,8 +71,29 @@ export default function PackagesScreen() {
             return list.length ? (
               <View style={{ gap: space.md }}>
                 {list.map((pkg) => (
-                  <PackageCard key={pkg.id} pkg={pkg} />
+                  <PackageCard key={pkg.id} pkg={pkg} context={context} />
                 ))}
+                {!context && data.devices.length && (type === 'ALL' || type === 'VIP') ? (
+                  <Section title="أجهزة VIP">
+                    {data.devices.map((device) => (
+                      <Card
+                        key={device.id}
+                        onPress={() => router.push({ pathname: '/checkout', params: { device: String(device.id) } })}
+                        accessibilityLabel={`${device.name}، ${formatPrice(device.price)}`}
+                        style={styles.device}
+                      >
+                        <IconWell name="hardware-chip-outline" tone="warning" />
+                        <View style={{ flex: 1, gap: 2 }}>
+                          <Text variant="label">{device.name}</Text>
+                          <Text variant="caption" color={colors.ink3} numberOfLines={2}>
+                            {device.description}
+                          </Text>
+                        </View>
+                        <Text variant="label">{formatPrice(device.price)}</Text>
+                      </Card>
+                    ))}
+                  </Section>
+                ) : null}
               </View>
             ) : (
               <EmptyState icon="sparkles-outline" title="ماكو باقات متاحة حاليًا" body="ارجع بعد شوية أو تواصل ويا الدعم." />
@@ -89,4 +117,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   filterActive: { borderColor: colors.brand, backgroundColor: 'rgba(47,107,255,0.18)' },
+  device: { flexDirection: 'row', alignItems: 'center', gap: space.md },
 });

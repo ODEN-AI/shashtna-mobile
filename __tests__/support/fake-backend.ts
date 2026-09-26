@@ -100,7 +100,24 @@ export function createBackend(initial: Partial<BackendState> = {}) {
     if (path === '/api/mobile/me') return json(200, { success: true, user });
     if (path === '/api/mobile/devices') return json(200, { success: true, deviceId: 1 });
 
-    if (path === '/api/mobile/dashboard') {
+    if (path.startsWith('/api/mobile/checkout')) {
+      const slug = new URL(`https://x${path}`).searchParams.get('plan');
+      if (slug !== PLAN.slug) return json(404, { success: false, code: 'UNAVAILABLE', message: 'غير متاح' });
+      return json(200, {
+        success: true,
+        mode: 'NEW',
+        customer: { name: user.name, phone: user.phone },
+        plan: { slug: PLAN.slug, name: PLAN.name, serviceType: 'IPTV', price: PLAN.price, durationLabel: PLAN.durationLabel, description: PLAN.description, features: PLAN.features, imageUrl: null },
+        device: null,
+        devices: [],
+        initialDeviceId: null,
+        subscription: null,
+        contactOptions: ['TELEGRAM', 'PHONE'],
+        initialContact: 'TELEGRAM',
+      });
+    }
+
+    if (path.startsWith('/api/mobile/dashboard')) {
       const dashboard: Dashboard = {
         user,
         accountState: state.order ? 'PENDING' : 'NONE',

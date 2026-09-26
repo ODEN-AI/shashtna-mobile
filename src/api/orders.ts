@@ -1,15 +1,28 @@
 import { request } from './client';
-import type { Order, OrderDetail, RequestType, Subscription, SubscriptionDetail } from './types';
+import type { Checkout, ContactOption, Order, OrderDetail, RequestType, Subscription, SubscriptionDetail } from './types';
+
+export type CheckoutParams = { plan?: string; renew?: number; upgrade?: number; device?: number };
 
 export type CreateOrderInput = {
   requestType: RequestType;
-  planSlug: string;
+  planSlug?: string;
   deviceId?: number;
+  contactMethod: ContactOption;
   subscriptionId?: number;
   customerNote?: string;
 };
 
 export type ProofFile = { uri: string; name: string; type: 'image/jpeg' | 'image/png' | 'image/webp' };
+
+export const checkoutApi = {
+  get: (params: CheckoutParams) => {
+    const query = Object.entries(params)
+      .filter(([, value]) => value !== undefined && value !== '')
+      .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
+      .join('&');
+    return request<Checkout>(`/api/mobile/checkout?${query}`);
+  },
+};
 
 export const ordersApi = {
   list: () => request<{ orders: Order[] }>('/api/mobile/orders'),

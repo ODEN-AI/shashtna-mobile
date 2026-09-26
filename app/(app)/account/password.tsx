@@ -3,6 +3,8 @@ import { useState } from 'react';
 
 import { authApi } from '@/src/api/auth';
 import { errorMessage } from '@/src/api/client';
+import { useAuth } from '@/src/auth/AuthProvider';
+import { usePush } from '@/src/push/PushProvider';
 import { Button } from '@/src/ui/Button';
 import { Field } from '@/src/ui/Field';
 import { Screen } from '@/src/ui/Screen';
@@ -11,6 +13,8 @@ import { useToast } from '@/src/ui/Toast';
 
 export default function PasswordScreen() {
   const toast = useToast();
+  const { replaceToken } = useAuth();
+  const { reregister } = usePush();
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -26,6 +30,9 @@ export default function PasswordScreen() {
 
     try {
       const result = await authApi.changePassword(current, next);
+      // Other devices are signed out; this one keeps a fresh session.
+      await replaceToken(result.token, result.expiresAt);
+      await reregister().catch(() => undefined);
       toast(result.message);
       router.back();
     } catch (caught) {

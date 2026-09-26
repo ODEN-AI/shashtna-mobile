@@ -1,14 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnnouncementList, OfferCarousel } from '@/src/features/ContentCards';
 import { IncidentBanner } from '@/src/features/IncidentBanner';
 import { NextActionCard } from '@/src/features/NextActionCard';
-import { OrderCard } from '@/src/features/OrderCard';
 import { PushPrompt } from '@/src/features/PushPrompt';
 import { SubscriptionHero } from '@/src/features/SubscriptionHero';
+import { TrackedOrderCard } from '@/src/features/TrackedOrderCard';
 import { firstName, greeting } from '@/src/lib/format';
 import { useDashboard } from '@/src/query/hooks';
 import { useAuth } from '@/src/auth/AuthProvider';
@@ -16,6 +16,7 @@ import { IconWell, type IconName } from '@/src/ui/IconWell';
 import { QueryBoundary } from '@/src/ui/QueryBoundary';
 import { Screen } from '@/src/ui/Screen';
 import { Section } from '@/src/ui/Section';
+import { Notice } from '@/src/ui/States';
 import { Text } from '@/src/ui/Text';
 import { colors, hitSlop, radius, space, type Tone } from '@/src/ui/theme';
 
@@ -32,7 +33,11 @@ const QUICK_ACTIONS: { label: string; icon: IconName; tone: Tone; href: string }
  */
 export default function DashboardScreen() {
   const { user } = useAuth();
-  const query = useDashboard();
+  // Arriving from checkout: /?order=<id>&created=1 (same as the website).
+  const params = useLocalSearchParams<{ order?: string; created?: string }>();
+  const highlight = Number(params.order) || null;
+  const query = useDashboard(highlight);
+  const justCreated = Boolean(highlight) && params.created === '1' && query.data?.currentOrder?.id === highlight;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }} edges={['top']}>
@@ -55,18 +60,20 @@ export default function DashboardScreen() {
         <QueryBoundary query={query} rows={4}>
           {(data) => (
             <>
+              {justCreated ? (
+                <Notice tone="success" icon="checkmark-circle">
+                  {data.currentOrder?.stage === 'PAYMENT_PENDING' ? 'تم إنشاء طلبك ✅ الخطوة التالية: إتمام الدفع' : 'تم إنشاء طلبك ✅ تكدر تتابعه من هنا.'}
+                </Notice>
+              ) : null}
+
               {data.incidents.length ? <IncidentBanner incidents={data.incidents} /> : null}
 
               <SubscriptionHero state={data.accountState} subscription={data.primarySubscription} order={data.currentOrder} />
 
-              {data.nextAction && data.nextAction.kind !== 'CHOOSE_PLAN' ? (
+              {data.currentOrder ? (
+                <TrackedOrderCard order={data.currentOrder} />
+              ) : data.nextAction && data.nextAction.kind !== 'CHOOSE_PLAN' ? (
                 <NextActionCard action={data.nextAction} renewSlug={data.primarySubscription?.packageSlug} />
-              ) : null}
-
-              {data.currentOrder && data.accountState !== 'PENDING' ? (
-                <Section title="طلبك الحالي" action={data.openOrdersCount > 1 ? `كل الطلبات (${data.openOrdersCount})` : undefined} onAction={() => router.push('/orders')}>
-                  <OrderCard order={data.currentOrder} />
-                </Section>
               ) : null}
 
               <PushPrompt />

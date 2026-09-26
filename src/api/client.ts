@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/src/lib/config';
+import { recordError } from '@/src/lib/diagnostics';
 
 /**
  * The one place that talks HTTP. Screens never call fetch directly: they use
@@ -145,6 +146,10 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     }
 
     const serverMessage = typeof data?.message === 'string' && data.message ? data.message : null;
+    if (kind === 'server') {
+      recordError('api', `${options.method ?? 'GET'} ${path.split('?')[0]} → ${response.status}`);
+    }
+
     // Server messages are written for customers; 5xx details are not.
     const message = kind === 'server' ? MESSAGES.server : serverMessage ?? MESSAGES[kind];
 

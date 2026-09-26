@@ -43,3 +43,8 @@ yarn-error.*
 # tests / tooling
 coverage/
 .maestro/screenshots/
+
+# Firebase / signing config — provided at build time, never committed
+google-services.json
+GoogleService-Info.plist
+*.keystore

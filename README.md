@@ -55,16 +55,21 @@ extra.apiBaseUrl`). No secrets are compiled into the app.
 Push notifications and the forced RTL layout need a **development build**
 (`eas build --profile development`), not Expo Go.
 
-## Push notifications — one-time setup
+## Push notifications and real-device testing
 
-1. `eas init` → writes `extra.eas.projectId` into `app.json` (required for push tokens).
-2. Android: upload the FCM V1 service-account key in EAS (`eas credentials`).
-3. iOS (when shipping iOS): `eas credentials` creates the APNs key.
-4. Website: optionally set `EXPO_ACCESS_TOKEN` if "Enhanced push security" is
-   enabled on expo.dev; set `CRON_SECRET` on Netlify for scheduled sends.
+Push and the forced RTL layout need a real build (development client, preview
+APK or production) — not Expo Go. Nothing secret is committed; `app.config.ts`
+reads at build time:
 
-Until step 1 is done the app runs normally but skips push registration
-(logged as a warning).
+| Variable | Purpose |
+| --- | --- |
+| `EAS_PROJECT_ID` | Expo project id (`eas init`), required for push tokens |
+| `GOOGLE_SERVICES_JSON` | Path/EAS file variable with Firebase `google-services.json` (FCM) |
+| `EXPO_PUBLIC_API_URL` | Optional backend override for test builds (e.g. a Netlify preview) |
+
+Full procedure and results sheet: **[docs/REAL_DEVICE_TEST.md](docs/REAL_DEVICE_TEST.md)**.
+Until `EAS_PROJECT_ID` is set the app runs but skips push registration
+(visible in حسابي → فحص الإشعارات).
 
 ## Checks
 
@@ -73,7 +78,7 @@ npm run typecheck
 npm run lint
 npm test                        # unit + screen flows
 npm run export:android          # production JS bundle
-npm run test:backend            # needs a running test website, see tests/backend/README.md
+npm run test:backend            # website ↔ mobile acceptance (A–E); needs a running test website, see tests/backend/README.md
 maestro test .maestro           # on a device/emulator with a test build
 ```
 

@@ -20,6 +20,8 @@ type AuthContextValue = {
   register: (input: { name: string; phone: string; password: string; terms: boolean }) => Promise<void>;
   signOut: (reason?: string | null) => Promise<void>;
   updateUser: (user: User) => void;
+  /** After a password change the server issues a fresh token for this device. */
+  replaceToken: (token: string, expiresAt: number) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -35,6 +37,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [signOutReason, setSignOutReason] = useState<string | null>(null);
   const tokenRef = useRef<string | null>(null);
+  const sessionRef = useRef<Session | null>(null);
+
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
   const signingOut = useRef(false);
 
   const applySession = useCallback(async (next: Session) => {
@@ -153,9 +160,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const replaceToken = useCallback(async (token: string, expiresAt: number) => {
+    tokenRef.current = token;
+    const current = sessionRef.current;
+
+    if (current) {
+      const next = { ...current, token, expiresAt };
+      sessionRef.current = next;
+      setSession(next);
+      await writeSession(next);
+    }
+  }, []);
+
   const value = useMemo<AuthContextValue>(
-    () => ({ status, user: session?.user ?? null, signOutReason, signIn, register, signOut, updateUser }),
-    [status, session, signOutReason, signIn, register, signOut, updateUser],
+    () => ({ status, user: session?.user ?? null, signOutReason, signIn, register, signOut, updateUser, replaceToken }),
+    [status, session, signOutReason, signIn, register, signOut, updateUser, replaceToken],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

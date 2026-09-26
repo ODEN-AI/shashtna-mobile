@@ -2,7 +2,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 
 import { catalogApi, contentApi, dashboardApi, helpApi, statusApi } from '@/src/api/account';
 import { notificationsApi } from '@/src/api/notifications';
-import { ordersApi, subscriptionsApi, type CreateOrderInput, type ProofFile } from '@/src/api/orders';
+import { checkoutApi, ordersApi, subscriptionsApi, type CheckoutParams, type CreateOrderInput, type ProofFile } from '@/src/api/orders';
 import { supportApi, type NewTicketInput } from '@/src/api/support';
 import type { NotificationPage } from '@/src/api/types';
 import { useAuth } from '@/src/auth/AuthProvider';
@@ -15,8 +15,24 @@ function useSignedIn() {
   return useAuth().status === 'signedIn';
 }
 
-export function useDashboard() {
-  return useQuery({ queryKey: queryKeys.dashboard, queryFn: dashboardApi.get, enabled: useSignedIn() });
+/** `highlightOrderId`: the order just created at checkout (shown first, like the website). */
+export function useDashboard(highlightOrderId?: number | null) {
+  return useQuery({
+    queryKey: highlightOrderId ? [...queryKeys.dashboard, highlightOrderId] : queryKeys.dashboard,
+    queryFn: () => dashboardApi.get(highlightOrderId),
+    enabled: useSignedIn(),
+  });
+}
+
+export function useCheckout(params: CheckoutParams) {
+  return useQuery({
+    queryKey: ['checkout', params.plan ?? null, params.renew ?? null, params.upgrade ?? null, params.device ?? null],
+    queryFn: () => checkoutApi.get(params),
+    enabled: useSignedIn(),
+    // Always resolve against current prices and availability.
+    staleTime: 0,
+    gcTime: 60_000,
+  });
 }
 
 export function useCatalog() {

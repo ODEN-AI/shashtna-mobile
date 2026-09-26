@@ -19,6 +19,9 @@ export const authApi = {
   updateMe: (input: Partial<Pick<User, 'name' | 'preferredContact' | 'renewalReminders' | 'marketingOptIn'>>) =>
     request<{ user: User; message?: string }>('/api/mobile/me', { method: 'PATCH', body: input }),
 
+  /** Signs out other devices; returns a fresh token for this one. */
   changePassword: (currentPassword: string, newPassword: string) =>
-    request<{ message: string }>('/api/mobile/me/password', { body: { currentPassword, newPassword } }),
+    request<{ message: string; token: string; expiresAt: number }>('/api/mobile/me/password', { body: { currentPassword, newPassword } }),
+
+  logoutAll: () => request<{ message: string }>('/api/mobile/auth/logout-all', { body: {} }),
 };

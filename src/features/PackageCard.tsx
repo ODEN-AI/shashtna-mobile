@@ -13,13 +13,13 @@ export function monthly(pkg: Pick<Package, 'price' | 'durationMonths'>) {
   return pkg.durationMonths > 1 ? Math.round(pkg.price / pkg.durationMonths / 250) * 250 : null;
 }
 
-export function PackageCard({ pkg }: { pkg: Package }) {
+export function PackageCard({ pkg, context }: { pkg: Package; context?: { upgrade?: string; renew?: string } }) {
   const perMonth = monthly(pkg);
 
   return (
     <Card
       glow={pkg.isPopular}
-      onPress={() => router.push({ pathname: '/packages/[slug]', params: { slug: pkg.slug } })}
+      onPress={() => router.push({ pathname: '/packages/[slug]', params: { slug: pkg.slug, ...context } })}
       accessibilityLabel={`${pkg.name}، ${formatPrice(pkg.price)}`}
       style={{ gap: space.md }}
     >

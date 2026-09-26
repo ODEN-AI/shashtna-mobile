@@ -2,7 +2,8 @@ import { request } from './client';
 import type { Catalog, Content, ContentItem, Dashboard, Help, ServiceStatus } from './types';
 
 export const dashboardApi = {
-  get: () => request<Dashboard>('/api/mobile/dashboard'),
+  get: (highlightOrderId?: number | null) =>
+    request<Dashboard>(`/api/mobile/dashboard${highlightOrderId ? `?order=${highlightOrderId}` : ''}`),
 };
 
 export const catalogApi = {
