@@ -1,0 +1,148 @@
+/**
+ * In-memory stand-in for the Shashtna backend, answering the same routes and
+ * shapes as /api/mobile/*. Used by the screen flow tests; the real backend is
+ * covered by the website's integration tests and tests/backend here.
+ */
+import type { AppNotification, Dashboard, OrderDetail, Package } from '@/src/api/types';
+
+const now = new Date().toISOString();
+
+export const PLAN: Package = {
+  id: 1,
+  name: 'IPTV سنة',
+  slug: 'iptv-year',
+  serviceType: 'IPTV',
+  price: 25000,
+  durationMonths: 12,
+  durationLabel: '1 Year',
+  description: 'كل القنوات',
+  features: ['4K', 'بدون تقطيع'],
+  notes: null,
+  imageUrl: null,
+  isPopular: true,
+  requiresDevice: false,
+};
+
+export function makeOrder(overrides: Partial<OrderDetail> = {}): OrderDetail {
+  return {
+    id: 12,
+    number: 'SH-000012',
+    requestType: 'NEW',
+    requestTypeLabel: 'اشتراك جديد',
+    serviceType: 'IPTV',
+    serviceName: PLAN.name,
+    planSlug: PLAN.slug,
+    price: 25000,
+    durationMonths: 12,
+    durationLabel: '1 Year',
+    deviceName: null,
+    devicePrice: null,
+    paymentMethod: null,
+    paymentReference: null,
+    customerNote: null,
+    status: 'SUBMITTED',
+    statusLabel: 'تم الإرسال',
+    statusHint: 'استلمنا طلبك.',
+    stage: 'PAYMENT_PENDING',
+    needsPayment: true,
+    isOpen: true,
+    canCancel: true,
+    proofUploadedAt: null,
+    subscriptionId: null,
+    createdAt: now,
+    updatedAt: now,
+    journey: [
+      { key: 'SELECT', label: 'اختيار الباقة', state: 'done' },
+      { key: 'PAY', label: 'الدفع', state: 'current' },
+      { key: 'PROOF', label: 'رفع إثبات الدفع', state: 'upcoming' },
+      { key: 'REVIEW', label: 'مراجعة وتفعيل', state: 'upcoming' },
+    ],
+    payment: { transfer: { transferNumber: '9286253712', recipientName: 'Shashtna' }, instructions: null },
+    events: [],
+    ...overrides,
+  };
+}
+
+export type BackendState = {
+  loggedIn: boolean;
+  order: OrderDetail | null;
+  notifications: AppNotification[];
+  calls: { method: string; path: string; body: unknown }[];
+};
+
+export function createBackend(initial: Partial<BackendState> = {}) {
+  const state: BackendState = { loggedIn: false, order: null, notifications: [], calls: [], ...initial };
+  const user = { id: 7, name: 'علي حسن', phone: '07700000000', email: null, role: 'CUSTOMER', isStaff: false, preferredContact: null, renewalReminders: true, marketingOptIn: false, createdAt: now };
+
+  function json(status: number, body: unknown) {
+    return Promise.resolve(new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }));
+  }
+
+  const fetchImpl = jest.fn((url: string, init: RequestInit = {}) => {
+    const path = url.replace(/^https?:\/\/[^/]+/, '');
+    const method = init.method ?? 'GET';
+    const body = typeof init.body === 'string' ? JSON.parse(init.body) : init.body;
+    state.calls.push({ method, path, body });
+    const authed = Boolean((init.headers as Record<string, string> | undefined)?.Authorization);
+
+    if (path === '/api/mobile/auth/login') {
+      if (body.password !== 'secret123') return json(401, { success: false, code: 'INVALID_CREDENTIALS', message: 'رقم الهاتف أو كلمة المرور غير صحيحة.' });
+      state.loggedIn = true;
+      return json(200, { success: true, token: 'tkn', expiresAt: Date.now() + 86_400_000, user });
+    }
+
+    if (path === '/api/mobile/catalog') return json(200, { success: true, packages: [PLAN], devices: [], currency: 'IQD' });
+    if (path === '/api/mobile/content') return json(200, { success: true, offers: [], announcements: [] });
+    if (path === '/api/mobile/help') return json(200, { success: true, faq: [], troubleshooting: [], categories: [], support: {} });
+
+    if (!authed) return json(401, { success: false, code: 'UNAUTHORIZED', message: 'انتهت الجلسة' });
+
+    if (path === '/api/mobile/me') return json(200, { success: true, user });
+    if (path === '/api/mobile/devices') return json(200, { success: true, deviceId: 1 });
+
+    if (path === '/api/mobile/dashboard') {
+      const dashboard: Dashboard = {
+        user,
+        accountState: state.order ? 'PENDING' : 'NONE',
+        primarySubscription: null,
+        subscriptionsCount: 0,
+        currentOrder: state.order,
+        openOrdersCount: state.order ? 1 : 0,
+        nextAction: state.order
+          ? { kind: 'PAY_ORDER', title: 'كمّل الدفع', body: 'حوّل المبلغ وارفع الإثبات', orderId: state.order.id }
+          : { kind: 'CHOOSE_PLAN', title: 'ابدأ اشتراكك', body: '' },
+        unreadNotifications: state.notifications.filter((item) => !item.readAt).length,
+        offers: [],
+        announcements: [],
+        incidents: [],
+        hasPackages: true,
+        recentActivity: [],
+        generatedAt: now,
+      };
+      return json(200, { success: true, ...dashboard });
+    }
+
+    if (path === '/api/mobile/orders' && method === 'POST') {
+      state.order = makeOrder();
+      return json(201, { success: true, order: state.order, alreadyExists: false });
+    }
+
+    if (path === '/api/mobile/orders') return json(200, { success: true, orders: state.order ? [state.order] : [] });
+
+    const orderMatch = path.match(/^\/api\/mobile\/orders\/(\d+)$/);
+    if (orderMatch) return state.order ? json(200, { success: true, order: state.order }) : json(404, { success: false, message: 'الطلب غير موجود.' });
+
+    if (path.startsWith('/api/mobile/notifications/read')) {
+      state.notifications = state.notifications.map((item) => (body.all || item.id === body.id ? { ...item, readAt: now } : item));
+      return json(200, { success: true, unread: state.notifications.filter((item) => !item.readAt).length });
+    }
+
+    if (path.startsWith('/api/mobile/notifications')) {
+      return json(200, { success: true, notifications: state.notifications, unread: state.notifications.filter((item) => !item.readAt).length, nextCursor: null });
+    }
+
+    return json(404, { success: false, message: `unhandled ${method} ${path}` });
+  });
+
+  return { state, fetchImpl };
+}

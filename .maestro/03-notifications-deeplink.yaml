@@ -1,0 +1,13 @@
+appId: app.shashtna.mobile
+---
+- launchApp
+- tapOn: "الإشعارات"
+- assertVisible:
+    text: "الإشعارات"
+# Deep links use the typed routes (same destinations as push notifications).
+- openLink: "shashtna://orders"
+- assertVisible: "طلباتي"
+- openLink: "shashtna://status"
+- assertVisible: "حالة الخدمة"
+- openLink: "shashtna://support"
+- assertVisible: "تذكرة دعم جديدة"

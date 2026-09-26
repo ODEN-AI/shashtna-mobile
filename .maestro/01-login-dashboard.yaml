@@ -1,0 +1,24 @@
+# Device E2E (Maestro). Needs a build of the app pointed at a TEST website
+# with a known customer: CUSTOMER_PHONE / CUSTOMER_PASSWORD.
+#   maestro test -e CUSTOMER_PHONE=... -e CUSTOMER_PASSWORD=... .maestro
+appId: app.shashtna.mobile
+---
+- launchApp:
+    clearState: true
+- assertVisible: "أهلًا بيك بشاشتنا"
+- tapOn:
+    id: "login-phone"
+- inputText: ${CUSTOMER_PHONE}
+- tapOn:
+    id: "login-password"
+- inputText: ${CUSTOMER_PASSWORD}
+- tapOn:
+    id: "login-submit"
+# Android 13+ notification permission prompt, asked once after sign-in.
+- runFlow:
+    when:
+      visible: "Allow"
+    commands:
+      - tapOn: "Allow"
+- assertVisible: "الرئيسية"
+- assertVisible: "الباقات"
