@@ -99,7 +99,7 @@
     "extra": {
       "apiBaseUrl": "https://shashtna.netlify.app",
       "eas": {
-        "projectId": ""
+        "projectId": "bb8ff136-b88e-4986-a256-d5ff004b9603"
       }
     }
   }
