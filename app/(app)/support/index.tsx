@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
+import { useRequireAuth } from '@/src/auth/useRequireAuth';
 import { formatRelative } from '@/src/lib/format';
 import { TICKET_STATUS } from '@/src/lib/status';
 import { useHelp, useTickets } from '@/src/query/hooks';
@@ -19,6 +20,7 @@ import { colors, space } from '@/src/ui/theme';
 /** Tickets (website ticket system), FAQ and contact channels from Admin → Settings. */
 export default function SupportScreen() {
   const tickets = useTickets();
+  const { signedIn, go } = useRequireAuth();
   const help = useHelp();
   const [openFaq, setOpenFaq] = useState<string | null>(null);
 
@@ -37,20 +39,23 @@ export default function SupportScreen() {
         void help.refetch();
       }}
     >
-      <Button title="تذكرة دعم جديدة" icon="add-circle-outline" onPress={() => router.push('/support/new')} />
+      <Button title="تذكرة دعم جديدة" icon="add-circle-outline" onPress={() => go('/support/new')} />
 
       {channels.length ? (
         <Card style={{ gap: space.md }}>
           <Text variant="label">تواصل مباشر{support?.hours ? ` · ${support.hours}` : ''}</Text>
           <View style={styles.channels}>
             {channels.map((channel) => (
-              <Button key={channel.label} title={channel.label} icon={channel.icon} variant="secondary" compact style={{ flex: 1 }} onPress={() => void Linking.openURL(channel.url)} />
+              <Button key={channel.label} title={channel.label} icon={channel.icon} variant="glass" compact style={{ flex: 1 }} onPress={() => void Linking.openURL(channel.url)} />
             ))}
           </View>
         </Card>
       ) : null}
 
       <Section title="تذاكري">
+        {!signedIn ? (
+          <EmptyState icon="chatbubbles-outline" title="تذاكرك تظهر هنا" body="سجّل دخولك حتى تفتح تذكرة وتتابع ردود فريق الدعم." action={<Button title="تسجيل الدخول" variant="glass" onPress={() => router.push('/login')} />} />
+        ) : (
         <QueryBoundary query={tickets} rows={2}>
           {(list) =>
             list.length ? (
@@ -82,6 +87,7 @@ export default function SupportScreen() {
             )
           }
         </QueryBoundary>
+        )}
       </Section>
 
       {help.data?.faq.length ? (
@@ -121,5 +127,5 @@ const styles = StyleSheet.create({
   channels: { flexDirection: 'row', gap: space.sm },
   faq: { paddingVertical: space.md, gap: space.sm },
   faqHead: { flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: 32 },
-  divider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line },
+  divider: { borderTopWidth: 1, borderTopColor: colors.line },
 });

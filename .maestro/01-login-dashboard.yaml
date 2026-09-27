@@ -5,7 +5,15 @@ appId: app.shashtna.mobile
 ---
 - launchApp:
     clearState: true
-- assertVisible: "أهلًا بيك بشاشتنا"
+# First launch: onboarding once, then the guest home (not login).
+- assertVisible:
+    id: "onboarding"
+- tapOn:
+    id: "onboarding-skip"
+- assertVisible:
+    id: "guest-welcome"
+- tapOn:
+    id: "guest-login"
 - tapOn:
     id: "login-phone"
 - inputText: ${CUSTOMER_PHONE}

@@ -1,26 +1,52 @@
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { AppNotification } from '@/src/api/types';
+import { useAuth } from '@/src/auth/AuthProvider';
+import { GuestGate } from '@/src/features/GuestGate';
+import { FeaturedNotification, NotificationCard } from '@/src/features/NotificationCard';
 import { destinationHref } from '@/src/lib/destinations';
-import { formatRelative } from '@/src/lib/format';
-import { notificationType } from '@/src/lib/status';
 import { useMarkRead, useNotifications } from '@/src/query/hooks';
-import { IconWell } from '@/src/ui/IconWell';
+import { AmbientBackground } from '@/src/ui/AmbientBackground';
+import { FilterChips } from '@/src/ui/FilterChips';
 import { OfflineBanner } from '@/src/ui/OfflineBanner';
+import { Screen, useTabBarInset } from '@/src/ui/Screen';
 import { EmptyState, ErrorState, LoadingState } from '@/src/ui/States';
 import { Text } from '@/src/ui/Text';
 import { colors, hitSlop, radius, space } from '@/src/ui/theme';
 
-/** Notification centre — the same records as the website's notifications page. */
 export default function NotificationsScreen() {
+  const signedIn = useAuth().status === 'signedIn';
+
+  if (!signedIn) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }} edges={['top']}>
+        <Screen edges={[]} tabBar>
+          <Text variant="title">الإشعارات</Text>
+          <GuestGate icon="notifications" title="خليك على اطلاع" body="سجّل دخولك حتى توصلك تحديثات طلبك وتفعيل اشتراكك وردود الدعم والعروض." />
+        </Screen>
+      </SafeAreaView>
+    );
+  }
+
+  return <NotificationCentre />;
+}
+
+/** Notification centre — the same records as the website's notifications page. */
+function NotificationCentre() {
   const query = useNotifications();
   const markRead = useMarkRead();
+  const inset = useTabBarInset();
+  const [filter, setFilter] = useState<'ALL' | 'UNREAD'>('ALL');
   const items = useMemo(() => query.data?.pages.flatMap((page) => page.notifications) ?? [], [query.data]);
   const unread = query.data?.pages[0]?.unread ?? 0;
+
+  const visible = useMemo(() => (filter === 'UNREAD' ? items.filter((item) => !item.readAt) : items), [items, filter]);
+  // The newest unread item is featured; everything else is a compact card.
+  const featured = visible.find((item) => !item.readAt) ?? null;
+  const rest = useMemo(() => (featured ? visible.filter((item) => item.id !== featured.id) : visible), [visible, featured]);
 
   function open(item: AppNotification) {
     if (!item.readAt) markRead.mutate(item.id);
@@ -29,42 +55,63 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }} edges={['top']}>
+      <AmbientBackground />
       <OfflineBanner />
       <FlatList
-        data={items}
+        data={rest}
         keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={{ padding: space.lg, paddingBottom: space.xxl * 2, gap: space.sm }}
+        contentContainerStyle={{ padding: space.lg, paddingBottom: inset, gap: space.sm }}
+        showsVerticalScrollIndicator={false}
+        initialNumToRender={8}
+        windowSize={7}
         ListHeaderComponent={
-          <View style={styles.header}>
-            <View>
-              <Text variant="title">الإشعارات</Text>
-              {unread ? (
-                <Text variant="caption" color={colors.ink3}>
-                  {unread} غير مقروء
+          <View style={{ gap: space.lg, marginBottom: space.sm }}>
+            <View style={styles.header}>
+              <View style={{ flex: 1 }}>
+                <Text variant="title" accessibilityRole="header">
+                  الإشعارات
                 </Text>
+                <Text variant="caption" color={colors.ink3}>
+                  {unread ? `${unread} غير مقروء` : 'كل شي مقروء'}
+                </Text>
+              </View>
+              {unread ? (
+                <Pressable onPress={() => markRead.mutate('all')} hitSlop={hitSlop} accessibilityRole="button" style={styles.markAll} testID="mark-all-read">
+                  <Text variant="label" color={colors.brandInk}>
+                    تعليم الكل كمقروء
+                  </Text>
+                </Pressable>
               ) : null}
             </View>
-            {unread ? (
-              <Pressable onPress={() => markRead.mutate('all')} hitSlop={hitSlop} accessibilityRole="button">
-                <Text variant="label" color={colors.brandInk}>
-                  تعليم الكل كمقروء
-                </Text>
-              </Pressable>
+            {items.length ? (
+              <FilterChips
+                items={[
+                  { value: 'ALL', label: 'الكل' },
+                  { value: 'UNREAD', label: 'غير مقروءة', count: unread || undefined },
+                ]}
+                value={filter}
+                onChange={setFilter}
+              />
             ) : null}
+            {featured ? <FeaturedNotification item={featured} onPress={() => open(featured)} /> : null}
           </View>
         }
-        refreshControl={<RefreshControl refreshing={query.isRefetching && !query.isFetchingNextPage} onRefresh={() => void query.refetch()} tintColor={colors.brandInk} colors={[colors.brand]} />}
+        refreshControl={
+          <RefreshControl refreshing={query.isRefetching && !query.isFetchingNextPage} onRefresh={() => void query.refetch()} tintColor={colors.brandInk} colors={[colors.brand]} />
+        }
         onEndReachedThreshold={0.4}
         onEndReached={() => {
           if (query.hasNextPage && !query.isFetchingNextPage) void query.fetchNextPage();
         }}
         ListFooterComponent={query.isFetchingNextPage ? <ActivityIndicator color={colors.brandInk} style={{ margin: space.lg }} /> : null}
-        renderItem={({ item }) => <NotificationRow item={item} onPress={() => open(item)} />}
+        renderItem={({ item }) => <NotificationCard item={item} onPress={() => open(item)} />}
         ListEmptyComponent={
-          query.isPending ? (
+          featured ? null : query.isPending ? (
             <LoadingState />
           ) : query.isError ? (
             <ErrorState error={query.error} onRetry={() => void query.refetch()} />
+          ) : filter === 'UNREAD' ? (
+            <EmptyState icon="checkmark-done-outline" tone="success" title="ماكو إشعارات غير مقروءة" />
           ) : (
             <EmptyState icon="notifications-outline" title="ماكو إشعارات" body="هنا توصلك تحديثات طلباتك واشتراكك والعروض." />
           )
@@ -74,49 +121,15 @@ export default function NotificationsScreen() {
   );
 }
 
-function NotificationRow({ item, onPress }: { item: AppNotification; onPress: () => void }) {
-  const meta = notificationType(item.type);
-
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`${item.readAt ? '' : 'غير مقروء. '}${item.title}. ${item.body}`}
-      style={({ pressed }) => [styles.row, !item.readAt && styles.unread, pressed && { opacity: 0.85 }]}
-    >
-      <IconWell name={meta.icon as never} tone={meta.tone} size={42} />
-      <View style={{ flex: 1, gap: 3 }}>
-        <View style={styles.titleRow}>
-          <Text variant="label" style={{ flex: 1 }} numberOfLines={2}>
-            {item.title}
-          </Text>
-          {!item.readAt ? <View style={styles.dot} /> : null}
-        </View>
-        <Text variant="caption" color={colors.ink2} numberOfLines={3}>
-          {item.body}
-        </Text>
-        {item.imageUrl ? <Image source={item.imageUrl} style={styles.image} contentFit="cover" recyclingKey={String(item.id)} /> : null}
-        <Text variant="caption" color={colors.ink3}>
-          {meta.label} · {formatRelative(item.createdAt)}
-        </Text>
-      </View>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: space.sm },
-  row: {
-    flexDirection: 'row',
-    gap: space.md,
-    padding: space.md,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.line,
+  header: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  markAll: {
+    paddingHorizontal: space.md,
+    minHeight: 40,
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+    backgroundColor: colors.glass,
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
   },
-  unread: { borderColor: 'rgba(34, 211, 238, 0.3)', backgroundColor: colors.surface2 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  dot: { width: 9, height: 9, borderRadius: 5, backgroundColor: colors.glow },
-  image: { width: '100%', aspectRatio: 2, borderRadius: radius.sm, marginTop: space.xs },
 });

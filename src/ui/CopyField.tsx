@@ -48,8 +48,8 @@ const styles = StyleSheet.create({
     gap: space.md,
     padding: space.md,
     borderRadius: radius.md,
-    backgroundColor: colors.surface2,
-    borderWidth: StyleSheet.hairlineWidth,
+    backgroundColor: 'rgba(1, 6, 25, 0.3)',
+    borderWidth: 1,
     borderColor: colors.lineStrong,
   },
   copy: {
@@ -58,8 +58,8 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: space.md,
     paddingVertical: space.sm,
-    borderRadius: radius.sm,
-    backgroundColor: 'rgba(47,107,255,0.14)',
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(25, 81, 252, 0.18)',
     minHeight: 40,
   },
 });

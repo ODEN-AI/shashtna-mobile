@@ -2,10 +2,11 @@ import { Text as RNText, type TextProps, type TextStyle } from 'react-native';
 
 import { colors, font } from './theme';
 
-type Variant = 'hero' | 'title' | 'heading' | 'body' | 'label' | 'caption' | 'mono';
+type Variant = 'display' | 'hero' | 'title' | 'heading' | 'body' | 'label' | 'caption' | 'mono';
 
 const VARIANTS: Record<Variant, TextStyle> = {
-  hero: { fontSize: font.size.hero, fontWeight: font.weight.heavy, lineHeight: 42 },
+  display: { fontSize: font.size.display, fontWeight: font.weight.heavy, lineHeight: 52 },
+  hero: { fontSize: font.size.hero, fontWeight: font.weight.heavy, lineHeight: 44 },
   title: { fontSize: font.size.xxl, fontWeight: font.weight.heavy, lineHeight: 36 },
   heading: { fontSize: font.size.lg, fontWeight: font.weight.bold, lineHeight: 26 },
   body: { fontSize: font.size.md, fontWeight: font.weight.regular, lineHeight: 24 },

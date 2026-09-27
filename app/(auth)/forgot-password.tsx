@@ -5,10 +5,10 @@ import { Linking } from 'react-native';
 import { authApi } from '@/src/api/auth';
 import { errorMessage } from '@/src/api/client';
 import { useHelp } from '@/src/query/hooks';
+import { AuthScene } from '@/src/features/AuthScene';
 import { Button } from '@/src/ui/Button';
 import { Card } from '@/src/ui/Card';
 import { Field } from '@/src/ui/Field';
-import { Screen } from '@/src/ui/Screen';
 import { Notice } from '@/src/ui/States';
 import { Text } from '@/src/ui/Text';
 import { useToast } from '@/src/ui/Toast';
@@ -45,20 +45,23 @@ export default function ForgotPasswordScreen() {
   const contact = support?.whatsapp ?? support?.telegram ?? null;
 
   return (
-    <Screen contentStyle={{ padding: space.xl }}>
-      <Text variant="title">نسيت كلمة المرور؟</Text>
-      <Text color={colors.ink2}>
-        {step === 'request'
+    <AuthScene
+      back
+      title="نسيت كلمة المرور؟"
+      subtitle={
+        step === 'request'
           ? 'اكتب رقم هاتفك. فريق الدعم يتأكد من هويتك ويعطيك رمز من 6 أرقام.'
-          : 'اكتب الرمز اللي استلمته من الدعم وكلمة المرور الجديدة. الرمز صالح لمدة 30 دقيقة.'}
-      </Text>
+          : 'اكتب الرمز اللي استلمته من الدعم وكلمة المرور الجديدة. الرمز صالح لمدة 30 دقيقة.'
+      }
+    >
       {error ? <Notice tone="danger">{error}</Notice> : null}
 
       {step === 'request' ? (
         <>
-          <Field label="رقم الهاتف" value={phone} onChangeText={setPhone} keyboardType="phone-pad" ltr placeholder="07XXXXXXXXX" />
+          <Field variant="pill" icon="call-outline" label="رقم الهاتف" value={phone} onChangeText={setPhone} keyboardType="phone-pad" ltr placeholder="07XXXXXXXXX" />
           <Button
             title="أرسل الطلب"
+            variant="light"
             loading={busy}
             onPress={() =>
               run(async () => {
@@ -74,13 +77,14 @@ export default function ForgotPasswordScreen() {
           <Card>
             <Text variant="label">الخطوة التالية</Text>
             <Text color={colors.ink2}>تواصل ويا الدعم حتى يتأكدون من هويتك ويعطوك الرمز.</Text>
-            {contact ? <Button title="تواصل ويا الدعم" icon="chatbubbles-outline" variant="secondary" compact style={{ marginTop: space.md }} onPress={() => void Linking.openURL(contact)} /> : null}
+            {contact ? <Button title="تواصل ويا الدعم" icon="chatbubbles-outline" variant="glass" compact style={{ marginTop: space.md }} onPress={() => void Linking.openURL(contact)} /> : null}
           </Card>
-          <Field label="رقم الهاتف" value={phone} onChangeText={setPhone} keyboardType="phone-pad" ltr />
-          <Field label="الرمز (6 أرقام)" value={code} onChangeText={(value) => setCode(value.replace(/\D/g, '').slice(0, 6))} keyboardType="number-pad" ltr />
-          <Field label="كلمة المرور الجديدة" value={password} onChangeText={setPassword} password hint="6 أحرف على الأقل" />
+          <Field variant="pill" icon="call-outline" label="رقم الهاتف" value={phone} onChangeText={setPhone} keyboardType="phone-pad" ltr />
+          <Field variant="pill" icon="keypad-outline" label="الرمز (6 أرقام)" value={code} onChangeText={(value) => setCode(value.replace(/\D/g, '').slice(0, 6))} keyboardType="number-pad" ltr />
+          <Field variant="pill" icon="lock-closed-outline" label="كلمة المرور الجديدة" value={password} onChangeText={setPassword} password hint="6 أحرف على الأقل" />
           <Button
             title="تغيير كلمة المرور"
+            variant="light"
             loading={busy}
             onPress={() =>
               run(async () => {
@@ -92,6 +96,6 @@ export default function ForgotPasswordScreen() {
           />
         </>
       )}
-    </Screen>
+    </AuthScene>
   );
 }

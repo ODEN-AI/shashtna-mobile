@@ -11,12 +11,14 @@ export function QueryBoundary<T>({
   query,
   children,
   rows,
+  variant,
 }: {
   query: UseQueryResult<T>;
   children: (data: T) => ReactNode;
   rows?: number;
+  variant?: 'cards' | 'hero';
 }) {
   if (query.data !== undefined) return <>{children(query.data)}</>;
   if (query.isError) return <ErrorState error={query.error} onRetry={() => void query.refetch()} />;
-  return <LoadingState rows={rows} />;
+  return <LoadingState rows={rows} variant={variant} />;
 }

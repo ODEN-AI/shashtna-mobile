@@ -41,7 +41,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         <Animated.View
           pointerEvents="none"
           accessibilityLiveRegion="polite"
-          style={[styles.toast, { opacity, bottom: insets.bottom + 90, borderColor: `${color}66` }]}
+          style={[styles.toast, { opacity, bottom: insets.bottom + 100, borderColor: `${color}66` }]}
         >
           <Ionicons name={toast.tone === 'error' ? 'alert-circle' : toast.tone === 'info' ? 'information-circle' : 'checkmark-circle'} size={20} color={color} />
           <Text variant="label" style={{ flex: 1 }}>
@@ -66,9 +66,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space.sm,
     padding: space.md,
-    borderRadius: radius.md,
+    borderRadius: radius.pill,
     borderWidth: 1,
-    backgroundColor: colors.surface3,
-    elevation: 8,
+    backgroundColor: colors.surface2,
+    boxShadow: '0px 12px 30px rgba(1, 6, 25, 0.6)',
   },
 });

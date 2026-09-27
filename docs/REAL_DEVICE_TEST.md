@@ -49,10 +49,13 @@ For the release: `npx eas-cli build --profile production --platform android`
 
 | # | Step | Expected | Result |
 |---|------|----------|--------|
-| 1 | Install | Icon «شاشتنا», dark splash | |
-| 2 | Launch | Login screen, RTL | |
-| 3 | Login (website account) | Dashboard; notification permission prompt once | |
-| 4 | Dashboard | Hero, quick actions, offers/news from the website | |
+| 1 | Install | Circular Shashtna emblem icon (adaptive), navy splash with the emblem | |
+| 2 | First launch | 4-step onboarding (skippable), RTL; then the guest home — not login | |
+| 2b | Relaunch | No onboarding again; guest home; spotlight item changes between cold launches | |
+| 2c | Guest browsing | Packages, package details, offers, status, help work without an account; «اطلب الباقة» asks to log in, then continues to checkout | |
+| 3 | Login (website account) | Customer home; notification permission prompt once | |
+| 4 | Home | Subscription hero, member or promotional spotlight (by state), quick actions, news | |
+| 4b | Bottom bar | Floating glass capsule, active pill glides between tabs, no logo in the bar; nothing hidden behind it | |
 | 5 | Packages | Same packages/prices as the website | |
 | 6 | Select package | Package details | |
 | 7 | Checkout | Customer info, package, contact method, note, total | |
@@ -69,7 +72,7 @@ For the release: `npx eas-cli build --profile production --platform android`
 | 18 | Push | See section 3 | |
 | 19 | Notification tap | Opens the right screen | |
 | 20 | Deep link | `adb shell am start -a android.intent.action.VIEW -d "shashtna://orders"` opens orders | |
-| 21 | Logout | Back to login; admin customer page shows the phone as inactive | |
+| 21 | Logout | Back to the guest home; admin customer page shows the phone as inactive | |
 | 22 | Re-login | Phone active again | |
 
 ## 3. Real push test (mandatory before release)

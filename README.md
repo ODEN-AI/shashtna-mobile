@@ -29,13 +29,13 @@ Admin (website) ──► Shashtna backend + PostgreSQL ──► website
 
 | Path | Holds |
 | --- | --- |
-| `app/` | Routes. `(auth)` login/register/reset; `(app)/(tabs)` home, packages, orders, notifications, account; `(app)/*` detail screens |
+| `app/` | Routes. `onboarding` (first launch only); `(auth)` login/register/reset; `(app)/(tabs)` home, packages, orders, notifications, account (guest-aware); `(app)/*` public detail screens; `(app)/(member)/*` account-only screens (checkout, orders, subscriptions, tickets…) |
 | `src/api/` | Typed API client (`client.ts`) and one module per domain (auth, orders, notifications, support…). Screens never call `fetch` |
 | `src/auth/` | Session store (SecureStore) and `AuthProvider` (restore, sign in/out, central 401 handling) |
 | `src/push/` | Permission, channels, token registration, tap routing, cold start |
 | `src/query/` | QueryClient, cache policy, data hooks and mutations |
 | `src/lib/` | Pure logic: typed destinations/deep links, formatting, state labels |
-| `src/ui/` | Design system (tokens in `theme.ts`, Text, Button, Card, Field, states, toast…) |
+| `src/ui/` | Shashtna Liquid Glass design system (tokens in `theme.ts`, gradients, GlassCard, Button, IconTile, StatusBadge, FilterChips, Field, states, toast…) — see `docs/UIUX_REDESIGN.md` |
 | `src/features/` | Composite pieces (subscription hero, next action, order card, offers…) |
 | `__tests__/` | Unit and screen-flow tests (`npm test`) |
 | `tests/backend/` | Website ↔ mobile acceptance tests (`npm run test:backend`) |

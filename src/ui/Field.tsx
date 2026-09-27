@@ -1,13 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
-import { forwardRef, useState } from 'react';
+import { forwardRef, useState, type ComponentProps } from 'react';
 import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { Text } from './Text';
 import { colors, font, hitSlop, radius, space } from './theme';
 
-type Props = TextInputProps & { label: string; error?: string | null; hint?: string; ltr?: boolean; password?: boolean };
+type Props = TextInputProps & {
+  label: string;
+  error?: string | null;
+  hint?: string;
+  ltr?: boolean;
+  password?: boolean;
+  /** `pill`: fully rounded, transparent — the auth card style. */
+  variant?: 'glass' | 'pill';
+  icon?: ComponentProps<typeof Ionicons>['name'];
+};
 
-export const Field = forwardRef<TextInput, Props>(function Field({ label, error, hint, ltr, password, style, ...props }, ref) {
+export const Field = forwardRef<TextInput, Props>(function Field({ label, error, hint, ltr, password, variant = 'glass', icon, style, ...props }, ref) {
   const [hidden, setHidden] = useState(true);
   const [focused, setFocused] = useState(false);
 
@@ -16,7 +25,8 @@ export const Field = forwardRef<TextInput, Props>(function Field({ label, error,
       <Text variant="label" color={colors.ink2}>
         {label}
       </Text>
-      <View style={[styles.box, focused && styles.focused, error ? styles.invalid : null]}>
+      <View style={[styles.box, variant === 'pill' && styles.pill, focused && styles.focused, error ? styles.invalid : null]}>
+        {icon ? <Ionicons name={icon} size={19} color={focused ? colors.brandInk : colors.ink3} /> : null}
         <TextInput
           ref={ref}
           placeholderTextColor={colors.ink3}
@@ -64,14 +74,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.sm,
-    minHeight: 52,
+    minHeight: 54,
     paddingHorizontal: space.lg,
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.lineStrong,
-    backgroundColor: colors.surface2,
+    backgroundColor: 'rgba(10, 33, 89, 0.5)',
   },
-  focused: { borderColor: colors.brand },
+  pill: { borderRadius: radius.pill, backgroundColor: 'rgba(1, 6, 25, 0.28)', borderColor: 'rgba(203, 233, 253, 0.24)', paddingHorizontal: space.xl },
+  focused: { borderColor: colors.active, backgroundColor: 'rgba(25, 81, 252, 0.12)' },
   invalid: { borderColor: colors.danger },
   input: {
     flex: 1,

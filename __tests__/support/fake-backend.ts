@@ -3,7 +3,7 @@
  * shapes as /api/mobile/*. Used by the screen flow tests; the real backend is
  * covered by the website's integration tests and tests/backend here.
  */
-import type { AppNotification, Dashboard, OrderDetail, Package } from '@/src/api/types';
+import type { AppNotification, Catalog, Content, Dashboard, Order, OrderDetail, Package, ServiceStatus, Subscription } from '@/src/api/types';
 
 const now = new Date().toISOString();
 
@@ -63,15 +63,68 @@ export function makeOrder(overrides: Partial<OrderDetail> = {}): OrderDetail {
   };
 }
 
+export const VIP_PLAN: Package = {
+  ...PLAN,
+  id: 2,
+  name: 'VIP ستة أشهر',
+  slug: 'vip-6',
+  serviceType: 'VIP',
+  price: 40000,
+  durationMonths: 6,
+  durationLabel: '6 Months',
+  isPopular: false,
+  requiresDevice: true,
+};
+
+export function makeSubscription(overrides: Partial<Subscription> = {}): Subscription {
+  return {
+    id: 5,
+    serviceType: 'IPTV',
+    packageName: 'IPTV شهر',
+    packageId: 3,
+    packageSlug: 'iptv-month',
+    status: 'ACTIVE',
+    state: 'ACTIVE',
+    stateLabel: 'نشط',
+    daysRemaining: 20,
+    remainingFraction: 0.66,
+    startDate: now,
+    expiryDate: new Date(Date.now() + 20 * 86_400_000).toISOString(),
+    maxConnections: 1,
+    createdAt: now,
+    canRenew: true,
+    credentials: null,
+    ...overrides,
+  };
+}
+
 export type BackendState = {
   loggedIn: boolean;
   order: OrderDetail | null;
   notifications: AppNotification[];
   calls: { method: string; path: string; body: unknown }[];
+  catalog: Catalog;
+  content: Content;
+  status: ServiceStatus;
+  /** Overrides merged into every dashboard response. */
+  dashboard: Partial<Dashboard>;
+  /** Extra orders listed on the orders screen (besides `order`). */
+  orders: Order[];
 };
 
 export function createBackend(initial: Partial<BackendState> = {}) {
-  const state: BackendState = { loggedIn: false, order: null, notifications: [], calls: [], ...initial };
+  const state: BackendState = {
+    loggedIn: false,
+    order: null,
+    notifications: [],
+    calls: [],
+    catalog: { packages: [PLAN], devices: [], currency: 'IQD' },
+    content: { offers: [], announcements: [] },
+    status: { overall: 'OPERATIONAL', active: [], resolved: [] },
+    dashboard: {},
+    orders: [],
+    ...initial,
+  };
   const user = { id: 7, name: 'علي حسن', phone: '07700000000', email: null, role: 'CUSTOMER', isStaff: false, preferredContact: null, renewalReminders: true, marketingOptIn: false, createdAt: now };
 
   function json(status: number, body: unknown) {
@@ -91,14 +144,21 @@ export function createBackend(initial: Partial<BackendState> = {}) {
       return json(200, { success: true, token: 'tkn', expiresAt: Date.now() + 86_400_000, user });
     }
 
-    if (path === '/api/mobile/catalog') return json(200, { success: true, packages: [PLAN], devices: [], currency: 'IQD' });
-    if (path === '/api/mobile/content') return json(200, { success: true, offers: [], announcements: [] });
+    if (path === '/api/mobile/auth/register') {
+      if (body.phone === '07711111111') return json(409, { success: false, code: 'PHONE_TAKEN', message: 'هذا الرقم مسجل مسبقًا.' });
+      state.loggedIn = true;
+      return json(201, { success: true, token: 'tkn', expiresAt: Date.now() + 86_400_000, user: { ...user, name: body.name, phone: body.phone } });
+    }
+
+    if (path === '/api/mobile/catalog') return json(200, { success: true, ...state.catalog });
+    if (path === '/api/mobile/content') return json(200, { success: true, ...state.content });
+    if (path === '/api/mobile/status') return json(200, { success: true, ...state.status });
     if (path === '/api/mobile/help') return json(200, { success: true, faq: [], troubleshooting: [], categories: [], support: {} });
 
     if (!authed) return json(401, { success: false, code: 'UNAUTHORIZED', message: 'انتهت الجلسة' });
 
     if (path === '/api/mobile/me') return json(200, { success: true, user });
-    if (path === '/api/mobile/devices') return json(200, { success: true, deviceId: 1 });
+    if (path.startsWith('/api/mobile/devices')) return json(200, { success: true, deviceId: 1 });
 
     if (path.startsWith('/api/mobile/checkout')) {
       const slug = new URL(`https://x${path}`).searchParams.get('plan');
@@ -135,6 +195,7 @@ export function createBackend(initial: Partial<BackendState> = {}) {
         hasPackages: true,
         recentActivity: [],
         generatedAt: now,
+        ...state.dashboard,
       };
       return json(200, { success: true, ...dashboard });
     }
@@ -144,7 +205,7 @@ export function createBackend(initial: Partial<BackendState> = {}) {
       return json(201, { success: true, order: state.order, alreadyExists: false });
     }
 
-    if (path === '/api/mobile/orders') return json(200, { success: true, orders: state.order ? [state.order] : [] });
+    if (path === '/api/mobile/orders') return json(200, { success: true, orders: [...(state.order ? [state.order] : []), ...state.orders] });
 
     const orderMatch = path.match(/^\/api\/mobile\/orders\/(\d+)$/);
     if (orderMatch) return state.order ? json(200, { success: true, order: state.order }) : json(404, { success: false, message: 'الطلب غير موجود.' });
