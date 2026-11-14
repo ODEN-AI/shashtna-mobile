@@ -7,27 +7,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { setPendingRedirect } from '@/src/auth/redirect';
 import { AmbientBackground } from '@/src/ui/AmbientBackground';
 import { BrandMark } from '@/src/ui/BrandMark';
-import { gradientStyle, linear, radial, RGB } from '@/src/ui/gradient';
 import { OfflineBanner } from '@/src/ui/OfflineBanner';
 import { Text } from '@/src/ui/Text';
-import { colors, hitSlop, radius, shadow, space } from '@/src/ui/theme';
+import { CARD_RATIO, colors, hitSlop, radius, space } from '@/src/ui/theme';
 
-/**
- * Two large luminous rings and soft geometric light shapes on deep blue:
- * static views, drawn once, no blur. Attention stays on the glass card.
- */
+/** Night canvas with the corner of a Shashtna card peeking in: the same world as the home card. */
 const Backdrop = memo(function Backdrop() {
-  const { width, height } = useWindowDimensions();
-  const ring = Math.max(width, 360) * 1.05;
+  const { width } = useWindowDimensions();
+  const cardWidth = Math.max(width, 360) * 0.9;
 
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       <AmbientBackground variant="auth" />
-      <View style={[styles.ring, { width: ring, height: ring, borderRadius: ring / 2, top: -ring * 0.42, end: -ring * 0.38 }]} />
-      <View style={[styles.ring, { width: ring, height: ring, borderRadius: ring / 2, bottom: -ring * 0.45, start: -ring * 0.42 }]} />
-      <View style={[styles.streak, { width: width * 1.6, top: height * 0.38, start: -width * 0.3 }]} />
-      <View style={[styles.shape, { width: 120, height: 34, top: height * 0.16, start: width * 0.08, transform: [{ rotate: '-38deg' }] }]} />
-      <View style={[styles.shape, { width: 64, height: 20, top: height * 0.72, end: width * 0.1, transform: [{ rotate: '32deg' }], opacity: 0.6 }]} />
+      <View style={[styles.peek, { width: cardWidth, height: cardWidth / CARD_RATIO, top: -cardWidth * 0.36, end: -cardWidth * 0.3 }]}>
+        <View style={styles.peekBand} />
+      </View>
     </View>
   );
 });
@@ -60,7 +54,7 @@ export function AuthScene({ title, subtitle, children, footer, back }: { title: 
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             <View style={styles.brand}>
-              <BrandMark size={76} glow />
+              <BrandMark size={64} />
             </View>
             <View style={styles.card}>
               <View style={{ gap: space.xs, marginBottom: space.sm }}>
@@ -84,21 +78,17 @@ export function AuthScene({ title, subtitle, children, footer, back }: { title: 
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.canvasDeep, overflow: 'hidden' },
-  ring: {
+  root: { flex: 1, backgroundColor: colors.canvas, overflow: 'hidden' },
+  peek: {
     position: 'absolute',
-    borderWidth: 5,
-    borderColor: colors.brand,
-    boxShadow: '0px 0px 34px rgba(25, 81, 252, 0.85)',
-    ...gradientStyle(radial(RGB.royal, 0.55, '50% 50%', '70%')),
+    borderRadius: radius.xxl,
+    backgroundColor: colors.brand,
+    opacity: 0.9,
+    overflow: 'hidden',
+    justifyContent: 'flex-end',
+    transform: [{ rotate: '-12deg' }],
   },
-  streak: {
-    position: 'absolute',
-    height: 90,
-    transform: [{ rotate: '-34deg' }],
-    ...gradientStyle(linear(90, ['rgba(55, 129, 252, 0)', 'rgba(55, 129, 252, 0.22)', 'rgba(55, 129, 252, 0)'])),
-  },
-  shape: { position: 'absolute', borderRadius: 6, backgroundColor: 'rgba(55, 129, 252, 0.35)', boxShadow: '0px 0px 30px rgba(55, 129, 252, 0.6)' },
+  peekBand: { height: 44, backgroundColor: colors.silver },
   topBar: { flexDirection: 'row', paddingHorizontal: space.lg, paddingTop: space.sm },
   close: {
     width: 44,
@@ -117,15 +107,12 @@ const styles = StyleSheet.create({
     padding: space.xl,
     paddingVertical: space.xxl,
     borderRadius: radius.xl,
-    backgroundColor: 'rgba(8, 24, 84, 0.62)',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: 'rgba(203, 233, 253, 0.2)',
-    borderTopColor: 'rgba(203, 233, 253, 0.34)',
-    boxShadow: shadow.float,
+    borderColor: colors.line,
     maxWidth: 460,
     width: '100%',
     alignSelf: 'center',
-    ...gradientStyle(linear(125, ['rgba(203, 233, 253, 0.10)', 'rgba(25, 81, 252, 0.10)', 'rgba(203, 233, 253, 0.03)'])),
   },
   footer: { alignItems: 'center', gap: space.md },
 });

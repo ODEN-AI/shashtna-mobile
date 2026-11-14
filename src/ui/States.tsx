@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     gap: space.md,
     padding: space.lg,
     borderRadius: radius.lg,
-    backgroundColor: 'rgba(10, 33, 89, 0.45)',
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.line,
   },

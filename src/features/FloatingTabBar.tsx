@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     borderColor: colors.glassBorder,
     borderTopColor: colors.glassEdge,
     boxShadow: shadow.float,
-    ...gradientStyle(linear(180, ['rgba(203, 233, 253, 0.08)', 'rgba(203, 233, 253, 0.01)'])),
+    ...gradientStyle(linear(180, ['rgba(244, 246, 251, 0.08)', 'rgba(203, 233, 253, 0.01)'])),
   },
   indicator: {
     position: 'absolute',

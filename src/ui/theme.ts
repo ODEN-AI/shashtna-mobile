@@ -1,78 +1,81 @@
 import { Platform } from 'react-native';
 
 /**
- * Shashtna Liquid Glass — design tokens.
+ * «بطاقة شاشتنا» — design tokens (direction contract:
+ * .impeccable/surfaces/app-app-tabs-index-tsx.md).
  *
- * Built on the brand blue family:
- *   #03195B navy · #0B2CB1 royal · #1951FC electric · #3781FC sky · #CBE9FD ice
- *
- * Depth comes from a deep navy canvas, translucent "glass" layers with a light
- * top edge, and blue gradients reserved for the few things that deserve
- * attention (the subscription hero, primary actions, the active tab, the
- * spotlight). Glass is a translucent fill, not a live blur: real-time blur is
- * expensive on mid-range Android phones and is not needed on a dark canvas.
+ * A quiet near-black ground with the website's brand blue; the subscription
+ * is a card in the customer's hand (brand-blue face, silver band, small gold
+ * seal used only on the card). One light primary button per screen. Status
+ * tones come from one ramp: running blue → expiring amber → ended muted.
+ * Colours match the Shashtna website (canvas #0b0e17, brand #2456e6).
  */
 export const palette = {
-  navy: '#03195B',
-  royal: '#0B2CB1',
-  electric: '#1951FC',
-  sky: '#3781FC',
-  ice: '#CBE9FD',
+  night: '#0B0E17',
+  brand: '#2456E6',
+  brandDeep: '#1A44C4',
+  silver: '#C9CED8',
+  gold: '#D9B46A',
+  paper: '#F4F6FB',
   white: '#FFFFFF',
 } as const;
 
 export const colors = {
-  // Backgrounds
-  canvas: '#020B26',
-  canvasDeep: '#010619',
-  surface: '#061A4A',
-  surface2: '#0A2159',
-  surface3: '#10296A',
-  // Glass layers (on the canvas or on gradients)
-  glass: 'rgba(203, 233, 253, 0.06)',
-  glassStrong: 'rgba(203, 233, 253, 0.10)',
-  glassBorder: 'rgba(203, 233, 253, 0.14)',
-  glassEdge: 'rgba(203, 233, 253, 0.26)',
+  // Backgrounds (tonal elevation: canvas → surface → surface2 → surface3)
+  canvas: '#0B0E17',
+  canvasDeep: '#080A11',
+  surface: '#121622',
+  surface2: '#151A26',
+  surface3: '#1D2232',
+  // Legacy names kept so every screen moves to the new world at once (no glass).
+  glass: '#151A26',
+  glassStrong: '#1D2232',
+  glassBorder: '#1D2232',
+  glassEdge: '#262C3D',
   // Dividers and borders
-  line: 'rgba(203, 233, 253, 0.09)',
-  lineStrong: 'rgba(203, 233, 253, 0.18)',
+  line: '#1D2232',
+  lineStrong: '#2A3142',
 
-  // Text (contrast measured on `canvas`: ink 17:1, ink2 10:1, ink3 5.6:1)
-  ink: '#F3F8FF',
-  ink2: '#B7C8EC',
-  ink3: '#8398C6',
-  inkOnLight: '#03195B',
+  // Text (contrast on canvas: ink 17.4:1, ink2 9.1:1, ink3 6.0:1)
+  ink: '#F4F6FB',
+  ink2: '#AAB2C5',
+  ink3: '#8A92A6',
+  inkOnLight: '#0B0E17',
 
   // Brand roles
-  brand: palette.electric,
-  brandStrong: palette.royal,
-  brandInk: '#8CC2FF',
-  active: palette.sky,
-  glow: '#6CC4FF',
-  ice: palette.ice,
+  brand: palette.brand,
+  brandStrong: palette.brandDeep,
+  brandInk: '#A8C0FF',
+  active: '#5B82F0',
+  glow: '#7FA0FF',
+  ice: palette.paper,
+  silver: palette.silver,
+  gold: palette.gold,
 
-  // Feedback
-  success: '#3DDC97',
-  warning: '#FFC247',
-  danger: '#FF7A7A',
-  info: '#7CC4FF',
+  // Status ramp and feedback
+  running: palette.brand,
+  expiring: '#F5B14A',
+  ended: '#6B7385',
+  success: '#4ADE80',
+  warning: '#F5B14A',
+  danger: '#F87171',
+  info: '#7FA0FF',
 
-  overlay: 'rgba(1, 6, 25, 0.72)',
+  overlay: 'rgba(8, 10, 17, 0.72)',
 } as const;
 
-/** Gradient stops, always listed start → end. */
+/** Gradient stops, start → end. Used sparingly: the card's sheen and the primary button only. */
 export const gradients = {
-  canvas: ['#041342', '#020B26', '#010619'],
-  // Every stop that carries text keeps white ≥ 5.7:1 and ice ≥ 4.5:1.
-  hero: [palette.royal, '#1542D8', palette.electric],
-  heroDeep: ['#051E6E', palette.royal, '#1542D8'],
-  primary: [palette.electric, '#1542D8'],
-  active: [palette.electric, '#1542D8'],
-  ice: ['#E8F5FE', palette.ice],
-  glassSheen: ['rgba(203, 233, 253, 0.13)', 'rgba(203, 233, 253, 0.03)'],
-  warm: ['#1B2C7A', '#3A2E8C'],
-  success: ['#0B5E4A', '#0E7A5E'],
-  danger: ['#5E1030', '#7A1A3A'],
+  canvas: ['#0B0E17', '#0B0E17'],
+  hero: [palette.brand, palette.brand],
+  heroDeep: [palette.brandDeep, palette.brand],
+  primary: [palette.brand, palette.brandDeep],
+  active: [palette.brand, palette.brandDeep],
+  ice: [palette.paper, palette.paper],
+  glassSheen: ['rgba(255, 255, 255, 0.10)', 'rgba(255, 255, 255, 0)'],
+  warm: ['#151A26', '#1D2232'],
+  success: ['#0E3B2A', '#124A34'],
+  danger: ['#3D1418', '#4A1A1F'],
 } as const;
 
 export type Tone = 'neutral' | 'brand' | 'success' | 'warning' | 'danger' | 'info' | 'glow';
@@ -99,16 +102,17 @@ export function toneBackground(tone: Tone, alpha = 0.14) {
 
 export { rgba };
 
-export const radius = { xs: 8, sm: 12, md: 16, lg: 22, xl: 28, xxl: 36, pill: 999 } as const;
+export const radius = { xs: 6, sm: 10, md: 14, lg: 16, xl: 20, xxl: 28, pill: 999 } as const;
 
-export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28, xxxl: 40 } as const;
+/** One 8-pt grid (4 for fine adjustments); the page margin is 24. */
+export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 40 } as const;
 
 /** Soft shadows and glows (RN 0.76+ `boxShadow`, supported on both platforms). */
 export const shadow = {
-  card: '0px 10px 28px rgba(1, 6, 25, 0.45)',
-  float: '0px 16px 40px rgba(1, 6, 25, 0.6)',
-  glow: '0px 12px 36px rgba(25, 81, 252, 0.45)',
-  glowSoft: '0px 8px 24px rgba(55, 129, 252, 0.28)',
+  card: '0px 8px 24px rgba(0, 0, 0, 0.35)',
+  float: '0px 12px 32px rgba(0, 0, 0, 0.45)',
+  glow: '0px 14px 32px rgba(36, 86, 230, 0.35)',
+  glowSoft: '0px 8px 20px rgba(36, 86, 230, 0.22)',
 } as const;
 
 /** Motion: short, eased, and skipped entirely when the OS asks for reduced motion. */
@@ -127,11 +131,14 @@ export const motion = {
  */
 export const font = {
   family: Platform.select({ ios: 'System', default: undefined }),
-  size: { xs: 12, sm: 13.5, md: 15, lg: 17, xl: 20, xxl: 26, hero: 34, display: 42 },
+  size: { xs: 12, sm: 13, md: 15, lg: 17, xl: 20, xxl: 24, hero: 32, display: 76 },
   weight: { regular: '400', medium: '500', bold: '700', heavy: '800' } as const,
 } as const;
 
 export const hitSlop = { top: 10, bottom: 10, left: 10, right: 10 } as const;
 
-/** Floating tab bar geometry, shared by the bar and by screens that scroll under it. */
-export const tabBar = { height: 66, gap: 12, side: 16 } as const;
+/** Bottom navigation (Material): 80 dp, flush to the edge. Screens pad their scroll by this. */
+export const tabBar = { height: 80, gap: 0, side: 0 } as const;
+
+/** The Shashtna card keeps a real card's proportions (85.6 × 54 mm). */
+export const CARD_RATIO = 85.6 / 54;

@@ -19,6 +19,6 @@ export function ProgressDots({ count, index, onSelect, label = 'الخطوة' }:
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
-  dot: { width: 7, height: 7, borderRadius: radius.pill, backgroundColor: 'rgba(203, 233, 253, 0.3)' },
+  dot: { width: 7, height: 7, borderRadius: radius.pill, backgroundColor: 'rgba(244, 246, 251, 0.3)' },
   active: { width: 22, backgroundColor: colors.ice },
 });

@@ -17,6 +17,7 @@ export default function AppLayout() {
       <Stack.Screen name="content/[id]" options={{ title: '' }} />
       <Stack.Screen name="status" options={{ title: 'حالة الخدمة' }} />
       <Stack.Screen name="support/index" options={{ title: 'الدعم والمساعدة' }} />
+      <Stack.Screen name="web" options={{ headerShown: false }} />
     </Stack>
   );
 }

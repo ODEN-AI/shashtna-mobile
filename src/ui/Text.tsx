@@ -5,9 +5,9 @@ import { colors, font } from './theme';
 type Variant = 'display' | 'hero' | 'title' | 'heading' | 'body' | 'label' | 'caption' | 'mono';
 
 const VARIANTS: Record<Variant, TextStyle> = {
-  display: { fontSize: font.size.display, fontWeight: font.weight.heavy, lineHeight: 52 },
-  hero: { fontSize: font.size.hero, fontWeight: font.weight.heavy, lineHeight: 44 },
-  title: { fontSize: font.size.xxl, fontWeight: font.weight.heavy, lineHeight: 36 },
+  display: { fontSize: font.size.display, fontWeight: font.weight.heavy, lineHeight: 84, letterSpacing: -2 },
+  hero: { fontSize: font.size.hero, fontWeight: font.weight.heavy, lineHeight: 42 },
+  title: { fontSize: font.size.xxl, fontWeight: font.weight.heavy, lineHeight: 34 },
   heading: { fontSize: font.size.lg, fontWeight: font.weight.bold, lineHeight: 26 },
   body: { fontSize: font.size.md, fontWeight: font.weight.regular, lineHeight: 24 },
   label: { fontSize: font.size.sm, fontWeight: font.weight.bold, lineHeight: 20 },

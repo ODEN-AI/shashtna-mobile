@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   panel: {
     paddingHorizontal: space.lg,
     borderRadius: radius.xl,
-    backgroundColor: 'rgba(10, 33, 89, 0.45)',
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.glassBorder,
     borderTopColor: colors.glassEdge,

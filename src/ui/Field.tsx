@@ -79,9 +79,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.lineStrong,
-    backgroundColor: 'rgba(10, 33, 89, 0.5)',
+    backgroundColor: colors.surface2,
   },
-  pill: { borderRadius: radius.pill, backgroundColor: 'rgba(1, 6, 25, 0.28)', borderColor: 'rgba(203, 233, 253, 0.24)', paddingHorizontal: space.xl },
+  pill: { borderRadius: radius.pill, backgroundColor: colors.surface2, borderColor: colors.lineStrong, paddingHorizontal: space.xl },
   focused: { borderColor: colors.active, backgroundColor: 'rgba(25, 81, 252, 0.12)' },
   invalid: { borderColor: colors.danger },
   input: {

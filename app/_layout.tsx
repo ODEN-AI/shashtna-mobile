@@ -11,6 +11,7 @@ import { takePendingRedirect } from '@/src/auth/redirect';
 import { APP_VERSION } from '@/src/lib/config';
 import { recordError } from '@/src/lib/diagnostics';
 import { OnboardingProvider, useOnboarding } from '@/src/onboarding/OnboardingProvider';
+import { UpdateGate } from '@/src/features/UpdateGate';
 import { PushProvider } from '@/src/push/PushProvider';
 import { createQueryClient, persister, shouldPersistQuery, wireQueryToDevice } from '@/src/query/client';
 import { Button } from '@/src/ui/Button';
@@ -88,7 +89,8 @@ function RootNavigator() {
   }
 
   const signedIn = status === 'signedIn';
-  const onboarded = onboarding.status === 'done';
+  // The old welcome carousel is retired: the home card explains itself.
+  const onboarded = true;
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.canvas }, animation: 'fade' }}>
@@ -125,7 +127,9 @@ export default function RootLayout() {
               <ToastProvider>
                 <ThemeProvider value={navigationTheme}>
                   <StatusBar style="light" />
-                  <RootNavigator />
+                  <UpdateGate>
+                    <RootNavigator />
+                  </UpdateGate>
                 </ThemeProvider>
               </ToastProvider>
             </PushProvider>

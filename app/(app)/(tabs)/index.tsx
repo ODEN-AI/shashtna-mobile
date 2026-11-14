@@ -1,236 +1,160 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Dashboard } from '@/src/api/types';
 import { useAuth } from '@/src/auth/AuthProvider';
-import { useRequireAuth } from '@/src/auth/useRequireAuth';
-import { AnnouncementList } from '@/src/features/ContentCards';
+import { EmptyCard, SubscriptionCard, cardLook } from '@/src/features/card/SubscriptionCard';
+import { OrderTrack } from '@/src/features/card/OrderTrack';
 import { IncidentBanner } from '@/src/features/IncidentBanner';
-import { NextActionCard } from '@/src/features/NextActionCard';
 import { PushPrompt } from '@/src/features/PushPrompt';
-import { QuickActions, type QuickAction } from '@/src/features/QuickActions';
-import { MemberSpotlight, PromoSpotlight } from '@/src/features/spotlight/Spotlight';
-import { SubscriptionHero } from '@/src/features/SubscriptionHero';
-import { TrackedOrderCard } from '@/src/features/TrackedOrderCard';
+import { openWeb } from '@/src/features/web/open';
 import { firstName, greeting } from '@/src/lib/format';
-import { useCatalog, useContent, useDashboard, useServiceStatus } from '@/src/query/hooks';
-import { BrandMark } from '@/src/ui/BrandMark';
+import { useDashboard, useServiceStatus } from '@/src/query/hooks';
 import { Button } from '@/src/ui/Button';
-import { GradientSurface } from '@/src/ui/GradientSurface';
 import { QueryBoundary } from '@/src/ui/QueryBoundary';
 import { Screen } from '@/src/ui/Screen';
-import { Section } from '@/src/ui/Section';
-import { ErrorState, LoadingState, Notice } from '@/src/ui/States';
+import { Notice } from '@/src/ui/States';
 import { Text } from '@/src/ui/Text';
-import { colors, gradients, hitSlop, radius, space } from '@/src/ui/theme';
+import { colors, hitSlop, space } from '@/src/ui/theme';
 
+/** «اشتراكي»: the card in hand, one big renew button, and the order being followed. */
 export default function HomeScreen() {
   const { status } = useAuth();
   return status === 'signedIn' ? <CustomerHome /> : <GuestHome />;
 }
 
-function useOpenAction() {
-  const { go } = useRequireAuth();
-  return (action: QuickAction) => (action.requiresAuth ? go(action.href) : router.push(action.href));
+const openStore = () => router.navigate('/store');
+
+function Header({ name, unread }: { name?: string; unread?: number }) {
+  return (
+    <View style={styles.header}>
+      <View style={{ flex: 1 }}>
+        <Text variant="caption" color={colors.ink3}>
+          {greeting()}
+        </Text>
+        <Text variant="title" numberOfLines={1}>
+          {name ? firstName(name) : 'شاشتنا'}
+        </Text>
+      </View>
+      {name !== undefined ? (
+        <Pressable
+          onPress={() => router.push('/notifications')}
+          hitSlop={hitSlop}
+          accessibilityRole="button"
+          accessibilityLabel={unread ? `الإشعارات، ${unread} جديدة` : 'الإشعارات'}
+          style={styles.bell}
+          testID="home-bell"
+        >
+          <Ionicons name="notifications-outline" size={24} color={colors.ink} />
+          {unread ? <View style={styles.bellDot} /> : null}
+        </Pressable>
+      ) : null}
+    </View>
+  );
 }
 
 // -------------------------------------------------------------------- guest
 
-const GUEST_ACTIONS: QuickAction[] = [
-  { key: 'packages', label: 'الباقات', icon: 'sparkles', href: '/packages' },
-  { key: 'support', label: 'الدعم', icon: 'headset-outline', href: '/support' },
-  { key: 'status', label: 'حالة الخدمة', icon: 'pulse-outline', href: '/status' },
-];
-
-/** Guest Home: browse packages, offers and news without an account. */
 function GuestHome() {
-  const catalog = useCatalog();
-  const content = useContent();
+  const insets = useSafeAreaInsets();
   const status = useServiceStatus();
-  const open = useOpenAction();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }} edges={['top']}>
-      <Screen
-        edges={[]}
-        tabBar
-        refreshing={catalog.isRefetching || content.isRefetching}
-        onRefresh={() => {
-          void catalog.refetch();
-          void content.refetch();
-          void status.refetch();
-        }}
-      >
-        <View style={styles.header}>
-          <BrandMark size={44} />
-          <View style={{ flex: 1 }}>
-            <Text variant="caption" color={colors.ink3}>
-              {greeting()}
-            </Text>
-            <Text variant="heading">شاشتنا</Text>
-          </View>
-          <Button title="دخول" variant="glass" compact icon="person-circle-outline" onPress={() => router.push('/login')} testID="guest-login" />
-        </View>
-
-        <GradientSurface stops={gradients.hero} style={styles.welcome} testID="guest-welcome">
-          <Text variant="caption" weight="bold" color={colors.ice}>
-            تتصفح كضيف
-          </Text>
-          <Text variant="title">كل باقات شاشتنا بين إيدك</Text>
-          <Text color={colors.ice}>تصفح الباقات والعروض بدون حساب. سجّل دخولك لما تريد تطلب وتتابع اشتراكك.</Text>
-          <View style={styles.welcomeActions}>
-            <Button title="إنشاء حساب" variant="light" compact onPress={() => router.push('/register')} style={{ flex: 1 }} testID="guest-register" />
-            <Button title="تصفح الباقات" variant="glass" compact onPress={() => router.push('/packages')} style={{ flex: 1 }} />
-          </View>
-        </GradientSurface>
-
-        {status.data?.active.length ? <IncidentBanner incidents={status.data.active} /> : null}
-
-        <PromoSpotlight offers={content.data?.offers} catalog={catalog.data} />
-
-        <QuickActions items={GUEST_ACTIONS} onOpen={open} />
-
-        {content.data?.announcements.length ? (
-          <Section title="الجديد من شاشتنا">
-            <AnnouncementList items={content.data.announcements.slice(0, 3)} />
-          </Section>
-        ) : null}
-
-        {catalog.isPending && content.isPending ? <LoadingState rows={2} /> : null}
-        {catalog.isError && !catalog.data ? (
-          <ErrorState
-            error={catalog.error}
-            onRetry={() => {
-              void catalog.refetch();
-              void content.refetch();
-            }}
-          />
-        ) : null}
-      </Screen>
-    </SafeAreaView>
+    <Screen edges={[]} tabBar contentStyle={{ paddingTop: insets.top + space.lg, paddingHorizontal: space.xl }} refreshing={status.isRefetching} onRefresh={() => void status.refetch()}>
+      <Header />
+      {status.data?.active.length ? <IncidentBanner incidents={status.data.active} /> : null}
+      <EmptyCard title="اشتراكك يصير هنا" body="اختار باقتك، وبعد التفعيل تشوف كم يوم باقي وتجدد بضغطة." />
+      <Button title="تصفح الباقات" size="lg" onPress={openStore} testID="guest-store" />
+      <View style={styles.pair}>
+        <Button title="تسجيل الدخول" variant="secondary" onPress={() => router.push('/login')} style={{ flex: 1 }} testID="guest-login" />
+        <Button title="حساب جديد" variant="ghost" onPress={() => router.push('/register')} style={{ flex: 1 }} testID="guest-register" />
+      </View>
+    </Screen>
   );
 }
 
 // ----------------------------------------------------------------- customer
 
-function customerActions(data: Dashboard | undefined): QuickAction[] {
-  return [
-    { key: 'packages', label: 'الباقات', icon: 'sparkles', href: '/packages' },
-    { key: 'orders', label: 'طلباتي', icon: 'receipt-outline', href: '/orders', badge: data?.openOrdersCount || undefined },
-    { key: 'notifications', label: 'الإشعارات', icon: 'notifications-outline', href: '/notifications', badge: data?.unreadNotifications || undefined },
-    { key: 'support', label: 'الدعم', icon: 'headset-outline', href: '/support' },
-    { key: 'status', label: 'حالة الخدمة', icon: 'pulse-outline', href: '/status' },
-    { key: 'account', label: 'حسابي', icon: 'person-circle-outline', href: '/account' },
-  ];
+function renewTitle(data: Dashboard) {
+  const sub = data.primarySubscription;
+  if (!sub) return 'اختار باقتك';
+  return cardLook(sub) === 'ended' ? 'رجّع اشتراكك' : 'جدّد اشتراكك';
 }
 
-/**
- * Customer Home: header → subscription hero → current order / next step →
- * spotlight (member or promotional by state) → quick actions → news.
- * All from one /api/mobile/dashboard call, cached for an instant start.
- */
 function CustomerHome() {
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   // Arriving from checkout: /?order=<id>&created=1 (same as the website).
   const params = useLocalSearchParams<{ order?: string; created?: string }>();
   const highlight = Number(params.order) || null;
   const query = useDashboard(highlight);
-  const catalog = useCatalog();
-  const open = useOpenAction();
   const justCreated = Boolean(highlight) && params.created === '1' && query.data?.currentOrder?.id === highlight;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.canvas }} edges={['top']}>
-      <Screen edges={[]} tabBar refreshing={query.isRefetching} onRefresh={() => void query.refetch()}>
-        <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text variant="heading" color="#FFFFFF">
-              {(query.data?.user.name ?? user?.name ?? '').trim().charAt(0) || '؟'}
-            </Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text variant="caption" color={colors.ink3}>
-              {greeting()}
-            </Text>
-            <Text variant="heading" numberOfLines={1}>
-              {firstName(query.data?.user.name ?? user?.name ?? '')}
-            </Text>
-          </View>
-          <Pressable onPress={() => router.push('/notifications')} hitSlop={hitSlop} accessibilityRole="button" accessibilityLabel="الإشعارات" style={styles.bell}>
-            <Ionicons name="notifications-outline" size={22} color={colors.ink} />
-            {query.data?.unreadNotifications ? <View style={styles.bellDot} /> : null}
-          </Pressable>
-        </View>
+    <Screen edges={[]} tabBar contentStyle={{ paddingTop: insets.top + space.lg, paddingHorizontal: space.xl }} refreshing={query.isRefetching} onRefresh={() => void query.refetch()}>
+      <Header name={query.data?.user.name ?? user?.name ?? ''} unread={query.data?.unreadNotifications} />
 
-        <QueryBoundary query={query} rows={3} variant="hero">
-          {(data) => (
+      <QueryBoundary query={query} rows={3} variant="hero">
+        {(data) => {
+          const sub = data.primarySubscription;
+          const order = data.currentOrder;
+          const renewing = Boolean(order?.isOpen && (order.requestType === 'RENEW' || order.needsPayment));
+
+          return (
             <>
               {justCreated ? (
                 <Notice tone="success" icon="checkmark-circle">
-                  {data.currentOrder?.stage === 'PAYMENT_PENDING' ? 'تم إنشاء طلبك ✅ الخطوة التالية: إتمام الدفع' : 'تم إنشاء طلبك ✅ تكدر تتابعه من هنا.'}
+                  {order?.needsPayment ? 'وصلنا طلبك. الخطوة الجاية: حوّل المبلغ وارفع صورة الحوالة.' : 'وصلنا طلبك. تكدر تتابعه من هنا.'}
                 </Notice>
               ) : null}
 
               {data.incidents.length ? <IncidentBanner incidents={data.incidents} /> : null}
 
-              <SubscriptionHero state={data.accountState} subscription={data.primarySubscription} order={data.currentOrder} />
+              {sub ? (
+                <SubscriptionCard subscription={sub} onPress={() => router.push(`/subscriptions/${sub.id}`)} />
+              ) : (
+                <EmptyCard
+                  title="ما عندك اشتراك بعد"
+                  body={order?.isOpen ? 'طلبك بالطريق. أول ما نفعّله تظهر بطاقتك هنا.' : 'اختار باقتك من المتجر وبطاقتك تظهر هنا.'}
+                />
+              )}
 
-              {data.currentOrder ? (
-                <TrackedOrderCard order={data.currentOrder} />
-              ) : data.nextAction && data.nextAction.kind !== 'CHOOSE_PLAN' ? (
-                <NextActionCard action={data.nextAction} renewSlug={data.primarySubscription?.packageSlug} />
+              {data.subscriptionsCount > 1 ? (
+                <Pressable onPress={() => router.push('/subscriptions')} accessibilityRole="button" style={styles.more} hitSlop={hitSlop}>
+                  <Text variant="label" color={colors.brandInk}>
+                    عندك {data.subscriptionsCount} اشتراكات · شوفها كلها
+                  </Text>
+                </Pressable>
               ) : null}
 
-              {data.accountState === 'ACTIVE' || data.accountState === 'EXPIRING' ? (
-                <MemberSpotlight dashboard={data} catalog={catalog.data} />
-              ) : data.accountState !== 'PENDING' ? (
-                <PromoSpotlight offers={data.offers} catalog={catalog.data} />
+              {!renewing ? (
+                <Button
+                  title={renewTitle(data)}
+                  size="lg"
+                  variant="light"
+                  icon={sub ? 'refresh' : 'bag-handle-outline'}
+                  onPress={() => (sub && sub.canRenew ? openWeb(`/checkout?renew=${sub.id}`, 'تجديد الاشتراك') : openStore())}
+                  testID="home-renew"
+                />
               ) : null}
+
+              {order && order.isOpen ? <OrderTrack order={order} /> : null}
 
               <PushPrompt />
-
-              <Section title="وصول سريع">
-                <QuickActions items={customerActions(data)} onOpen={open} />
-              </Section>
-
-              {data.announcements.length ? (
-                <Section title="الجديد من شاشتنا">
-                  <AnnouncementList items={data.announcements} />
-                </Section>
-              ) : null}
             </>
-          )}
-        </QueryBoundary>
-      </Screen>
-    </SafeAreaView>
+          );
+        }}
+      </QueryBoundary>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  avatar: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.brand,
-    borderWidth: 1,
-    borderColor: colors.glassEdge,
-  },
-  bell: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: colors.glassStrong,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bellDot: { position: 'absolute', top: 11, end: 12, width: 9, height: 9, borderRadius: 5, backgroundColor: colors.ice },
-  welcome: { padding: space.xl, gap: space.sm, borderRadius: radius.xxl },
-  welcomeActions: { flexDirection: 'row', gap: space.md, marginTop: space.sm },
+  bell: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
+  bellDot: { position: 'absolute', top: 12, end: 13, width: 9, height: 9, borderRadius: 5, backgroundColor: colors.brandInk },
+  pair: { flexDirection: 'row', gap: space.md },
+  more: { alignSelf: 'flex-start', minHeight: 32, justifyContent: 'center' },
 });

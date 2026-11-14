@@ -29,7 +29,7 @@ export function ListRow({
       disabled={!onPress}
       accessibilityRole={onPress ? 'button' : undefined}
       accessibilityLabel={subtitle ? `${title}، ${subtitle}` : title}
-      android_ripple={{ color: 'rgba(203, 233, 253, 0.08)' }}
+      android_ripple={{ color: 'rgba(244, 246, 251, 0.08)' }}
       style={({ pressed }) => [styles.row, pressed && { opacity: 0.8 }]}
     >
       {icon ? <IconWell name={icon} tone={tone} size={40} /> : null}

@@ -58,3 +58,10 @@ jest.mock('expo-notifications', () => {
     setBadgeCountAsync: jest.fn(() => Promise.resolve(true)),
   };
 });
+
+jest.mock('react-native-webview', () => {
+  const { forwardRef } = require('react');
+  const { View } = require('react-native');
+  const WebView = forwardRef((props, ref) => require('react').createElement(View, { ...props, ref, testID: props.testID ?? 'webview' }));
+  return { __esModule: true, WebView, default: WebView };
+});

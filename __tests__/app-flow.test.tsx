@@ -19,14 +19,9 @@ beforeEach(resetDevice);
 
 describe('customer journey (router + providers + API client)', () => {
   it('guest browses → orders a package → signs in → checkout → dashboard payment', async () => {
-    const { screen, backend } = await startApp();
-
-    // Guest home first — not the login screen.
-    await screen.findByTestId('guest-welcome');
-    expect(screen.queryByTestId('login-phone')).toBeNull();
+    const { screen, backend } = await startApp({ url: '/packages' });
 
     // Packages are open to guests.
-    fireEvent.press(screen.getByTestId('tab-packages'));
     fireEvent.press(await screen.findByTestId('package-iptv-year'));
     fireEvent.press(await screen.findByTestId('order-package'));
 
@@ -58,14 +53,17 @@ describe('customer journey (router + providers + API client)', () => {
     const created = backend.state.calls.find((call) => call.path === '/api/mobile/orders' && call.method === 'POST')!.body as Record<string, unknown>;
     expect(created).toEqual({ requestType: 'NEW', planSlug: 'iptv-year', contactMethod: 'PHONE' });
 
-    // Then the dashboard, highlighting the new order with its payment step.
-    await screen.findByText('تم إنشاء طلبك ✅ الخطوة التالية: إتمام الدفع');
+    // Then «اشتراكي», following the new order with its one next step.
+    await screen.findByText('وصلنا طلبك. الخطوة الجاية: حوّل المبلغ وارفع صورة الحوالة.');
     expect(backend.state.calls.some((call) => call.path === '/api/mobile/dashboard?order=12')).toBe(true);
-    await screen.findByText('طلب قيد المتابعة');
-    expect(screen.getByText('ادفع بالتحويل')).toBeTruthy();
-    expect(screen.getByText('9286253712')).toBeTruthy();
+    await screen.findByText('طلبك الحالي');
     expect(screen.getAllByText('25,000 د.ع').length).toBeGreaterThan(0);
     expect(screen.getPathname()).toBe('/');
+
+    // The payment details and proof upload live on the order.
+    fireEvent.press(screen.getByTestId('order-pay'));
+    await waitFor(() => expect(screen.getPathname()).toBe('/orders/12'));
+    expect(await screen.findByText('9286253712')).toBeTruthy();
   });
 
   it('signing in from the guest home shows the customer home (no subscription yet)', async () => {
@@ -76,9 +74,9 @@ describe('customer journey (router + providers + API client)', () => {
     fireEvent.changeText(screen.getByTestId('login-password'), 'secret123');
     fireEvent.press(screen.getByTestId('login-submit'));
 
-    await screen.findByText('ابدأ المشاهدة ويا شاشتنا');
-    expect(screen.getByText('تصفح الباقات')).toBeTruthy();
-    expect(screen.queryByTestId('guest-welcome')).toBeNull();
+    await screen.findByText('ما عندك اشتراك بعد');
+    expect(screen.getByText('اختار باقتك')).toBeTruthy();
+    expect(screen.queryByTestId('guest-store')).toBeNull();
     expect(screen.getPathname()).toBe('/');
   });
 
@@ -92,7 +90,7 @@ describe('customer journey (router + providers + API client)', () => {
         ],
       },
     });
-    await router.findByText('طلبك قيد التنفيذ');
+    await router.findByTestId('order-track');
 
     tap({ notificationId: 55, type: 'ORDER_STATUS', link: '/orders/12' });
 

@@ -47,5 +47,5 @@ export async function startApp({
 }
 
 export function authedCalls(backend: ReturnType<typeof createBackend>) {
-  return backend.state.calls.filter((call) => !['/api/mobile/catalog', '/api/mobile/content', '/api/mobile/status', '/api/mobile/help'].includes(call.path));
+  return backend.state.calls.filter((call) => !['/api/mobile/catalog', '/api/mobile/content', '/api/mobile/status', '/api/mobile/help', '/api/mobile/config'].includes(call.path));
 }

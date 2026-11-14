@@ -3,12 +3,12 @@
     "name": "شاشتنا",
     "slug": "shashtna",
     "scheme": "shashtna",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#020B26",
-    "primaryColor": "#1951FC",
+    "backgroundColor": "#0B0E17",
+    "primaryColor": "#2456E6",
     "platforms": [
       "android",
       "ios"
@@ -24,9 +24,9 @@
     },
     "android": {
       "package": "app.shashtna.mobile",
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
-        "backgroundColor": "#03195B",
+        "backgroundColor": "#0B0E17",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -71,7 +71,7 @@
         "expo-notifications",
         {
           "icon": "./assets/android-icon-monochrome.png",
-          "color": "#1951FC",
+          "color": "#2456E6",
           "defaultChannel": "account"
         }
       ],
@@ -88,7 +88,7 @@
         {
           "image": "./assets/splash-icon.png",
           "imageWidth": 180,
-          "backgroundColor": "#020B26"
+          "backgroundColor": "#0B0E17"
         }
       ],
       "expo-asset"

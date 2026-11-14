@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     gap: space.md,
     padding: space.md,
     borderRadius: radius.lg,
-    backgroundColor: 'rgba(10, 33, 89, 0.4)',
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.line,
   },

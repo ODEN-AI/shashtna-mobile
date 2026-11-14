@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { gradientStyle, linear } from './gradient';
-import { colors, gradients, radius, shadow, space } from './theme';
+import { colors, radius, space } from './theme';
 
 type Props = {
   children: ReactNode;
@@ -15,12 +14,7 @@ type Props = {
   testID?: string;
 };
 
-const SHEEN = gradientStyle(linear(180, gradients.glassSheen));
-
-/**
- * GlassCard — the standard surface: a translucent layer over the navy canvas
- * with a lighter top edge (the "liquid glass" rim). No live blur.
- */
+/** The standard surface: one tonal step above the night canvas, with a hairline. */
 export function GlassCard({ children, style, onPress, accessibilityLabel, accessibilityHint, glow, testID }: Props) {
   if (onPress) {
     return (
@@ -30,8 +24,8 @@ export function GlassCard({ children, style, onPress, accessibilityLabel, access
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         accessibilityHint={accessibilityHint}
-        android_ripple={{ color: 'rgba(203, 233, 253, 0.08)' }}
-        style={({ pressed }) => [styles.card, SHEEN, glow && styles.glow, pressed && styles.pressed, style]}
+        android_ripple={{ color: 'rgba(244, 246, 251, 0.08)' }}
+        style={({ pressed }) => [styles.card, glow && styles.glow, pressed && styles.pressed, style]}
       >
         {children}
       </Pressable>
@@ -39,7 +33,7 @@ export function GlassCard({ children, style, onPress, accessibilityLabel, access
   }
 
   return (
-    <View testID={testID} style={[styles.card, SHEEN, glow && styles.glow, style]}>
+    <View testID={testID} style={[styles.card, glow && styles.glow, style]}>
       {children}
     </View>
   );
@@ -50,18 +44,15 @@ export const Card = GlassCard;
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(10, 33, 89, 0.55)',
-    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: colors.glassBorder,
-    borderTopColor: colors.glassEdge,
+    borderColor: colors.line,
     padding: space.lg,
     overflow: 'hidden',
   },
   glow: {
-    borderColor: 'rgba(108, 196, 255, 0.35)',
-    borderTopColor: 'rgba(203, 233, 253, 0.45)',
-    boxShadow: shadow.glowSoft,
+    borderColor: colors.brand,
   },
   pressed: { opacity: 0.9, transform: [{ scale: 0.99 }] },
 });

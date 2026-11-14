@@ -1,10 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fireEvent, waitFor, within } from 'expo-router/testing-library';
 import { Alert } from 'react-native';
 
 import type { AppNotification } from '@/src/api/types';
-import { SPOTLIGHT_KEY } from '@/src/features/spotlight/session';
-import { ONBOARDING_KEY } from '@/src/onboarding/OnboardingProvider';
 
 import { authedCalls, resetDevice, startApp } from './support/app';
 import { makeOrder, makeSubscription, PLAN, VIP_PLAN } from './support/fake-backend';
@@ -28,65 +25,18 @@ const notification = (id: number, extra: Partial<AppNotification> = {}): AppNoti
   ...extra,
 });
 
-describe('onboarding', () => {
-  it('shows once on first launch, then goes to the guest home (not login)', async () => {
-    const { screen } = await startApp({ onboarded: false });
-
-    await screen.findByTestId('onboarding');
-    screen.getByText('هلا بيك بشاشتنا');
-    fireEvent.press(screen.getByTestId('onboarding-next'));
-    await screen.findByText('اختار الباقة اللي تناسبك');
-    fireEvent.press(screen.getByTestId('onboarding-next'));
-    fireEvent.press(screen.getByTestId('onboarding-next'));
-    await screen.findByText('تحديثات أول بأول');
-    fireEvent.press(screen.getByTestId('onboarding-start'));
-
-    await screen.findByTestId('guest-welcome');
-    expect(screen.queryByTestId('login-phone')).toBeNull();
-    expect(await AsyncStorage.getItem(ONBOARDING_KEY)).toBeTruthy();
-  });
-
-  it('can be skipped, and is not shown again on the next launch', async () => {
-    const first = await startApp({ onboarded: false });
-    fireEvent.press(await first.screen.findByTestId('onboarding-skip'));
-    await first.screen.findByTestId('guest-welcome');
-    first.screen.unmount();
-
-    // Next launch: same storage, straight to the guest home.
-    const { screen } = await startApp({ onboarded: false });
-    await screen.findByTestId('guest-welcome');
-    expect(screen.queryByTestId('onboarding')).toBeNull();
-  });
-});
-
 describe('guest home', () => {
-  it('browses real catalogue content without an account', async () => {
-    const { screen, backend } = await startApp();
+  it('shows the empty card, the store and sign-in without asking for account data', async () => {
+    const { screen, backend } = await startApp({ onboarded: false });
 
-    await screen.findByTestId('guest-welcome');
-    // Spotlight features a real package from the catalogue.
-    const spotlight = await screen.findByTestId('promo-spotlight');
-    within(spotlight).getByText(PLAN.name);
-    within(spotlight).getByText('25,000 د.ع');
-    screen.getByTestId('quick-actions');
-
-    // No account data is requested for a guest.
+    await screen.findByTestId('empty-card');
+    screen.getByText('اشتراكك يصير هنا');
+    expect(screen.queryByTestId('onboarding')).toBeNull();
     expect(authedCalls(backend)).toEqual([]);
 
-    fireEvent.press(within(spotlight).getByTestId('promo-cta'));
-    await waitFor(() => expect(screen.getPathname()).toBe(`/packages/${PLAN.slug}`));
-  });
-
-  it('shows a 2–4 product campaign on some launches', async () => {
-    await AsyncStorage.setItem(SPOTLIGHT_KEY, JSON.stringify({ recent: [], launches: 2 }));
-    const { screen } = await startApp({
-      backend: { catalog: { packages: [PLAN, VIP_PLAN, { ...PLAN, id: 9, slug: 'iptv-3', name: 'IPTV 3 أشهر' }], devices: [], currency: 'IQD' } },
-    });
-
-    const campaign = await screen.findByTestId('promo-campaign');
-    within(campaign).getByText(PLAN.name);
-    within(campaign).getByText(VIP_PLAN.name);
-    expect(screen.queryByTestId('promo-spotlight')).toBeNull();
+    fireEvent.press(screen.getByTestId('guest-store'));
+    await waitFor(() => expect(screen.getPathname()).toBe('/store'));
+    screen.getByTestId('web-page');
   });
 });
 
@@ -110,7 +60,7 @@ describe('login and register', () => {
     fireEvent.press(screen.getByTestId('register-terms'));
     fireEvent.press(screen.getByTestId('register-submit'));
 
-    await screen.findByTestId('subscription-hero');
+    await screen.findByTestId('home-renew');
     const call = backend.state.calls.find((item) => item.path === '/api/mobile/auth/register');
     expect(call?.body).toEqual({ name: 'سارة', phone: '07722222222', password: 'secret123', terms: true });
   });
@@ -123,56 +73,70 @@ describe('login and register', () => {
     fireEvent.press(screen.getByTestId('go-register'));
     await screen.findByTestId('register-name');
     fireEvent.press(screen.getByTestId('auth-close'));
-    await screen.findByTestId('guest-welcome');
+    await screen.findByTestId('guest-store');
   });
 });
 
 describe('customer home', () => {
-  it('active subscriber: subscription hero is the anchor, with a Member Spotlight (no sales ads)', async () => {
+  it('active subscriber: the card shows days left and the end date, with one renew button', async () => {
     const { screen } = await startApp({
       signedIn: true,
       backend: { dashboard: { accountState: 'ACTIVE', primarySubscription: makeSubscription(), nextAction: null } },
     });
 
-    const hero = await screen.findByTestId('subscription-hero');
-    within(hero).getByText('IPTV شهر');
-    within(hero).getByText('20');
-    within(hero).getByText('اشتراكك شغّال');
-    within(hero).getByTestId('hero-renew');
-    await screen.findByTestId('member-spotlight');
-    expect(screen.queryByTestId('promo-spotlight')).toBeNull();
-    expect(screen.queryByTestId('promo-campaign')).toBeNull();
+    const card = await screen.findByTestId('subscription-card');
+    within(card).getByText('IPTV شهر');
+    await waitFor(() => within(card).getByText('20'));
+    within(card).getByText(/^ينتهي /);
+    screen.getByText('جدّد اشتراكك');
+    expect(screen.queryByTestId('order-track')).toBeNull();
   });
 
-  it('expired subscriber: renewal first and a promotional spotlight', async () => {
+  it('renewing opens the website checkout for that subscription inside the app', async () => {
+    const { screen } = await startApp({
+      signedIn: true,
+      backend: { dashboard: { accountState: 'ACTIVE', primarySubscription: makeSubscription(), nextAction: null } },
+    });
+
+    fireEvent.press(await screen.findByTestId('home-renew'));
+    await waitFor(() => expect(screen.getPathname()).toBe('/web'));
+    screen.getByTestId('web-page');
+  });
+
+  it('expiring and ended cards say so plainly', async () => {
+    const soon = await startApp({
+      signedIn: true,
+      backend: { dashboard: { accountState: 'EXPIRING', primarySubscription: makeSubscription({ state: 'EXPIRING', daysRemaining: 3 }), nextAction: null } },
+    });
+    await soon.screen.findByText(/^قرب ينتهي/);
+    soon.screen.getByText('أيام باقية');
+    soon.screen.unmount();
+
     const { screen } = await startApp({
       signedIn: true,
       backend: { dashboard: { accountState: 'EXPIRED', primarySubscription: makeSubscription({ state: 'EXPIRED', daysRemaining: 0 }), nextAction: null } },
     });
-
-    const hero = await screen.findByTestId('subscription-hero');
-    within(hero).getByText('اشتراكك منتهي');
-    within(hero).getByText('جدّد الآن');
-    await screen.findByTestId('promo-spotlight');
-    expect(screen.queryByTestId('member-spotlight')).toBeNull();
+    const card = await screen.findByTestId('subscription-card');
+    within(card).getByText('انتهى');
+    screen.getByText('رجّع اشتراكك');
   });
 
-  it('quick actions only open existing screens', async () => {
-    const { screen } = await startApp({ signedIn: true });
-    const actions = await screen.findByTestId('quick-actions');
-    for (const key of ['packages', 'orders', 'notifications', 'support', 'status', 'account']) {
-      within(actions).getByTestId(`quick-${key}`);
-    }
-    fireEvent.press(within(actions).getByTestId('quick-status'));
-    await waitFor(() => expect(screen.getPathname()).toBe('/status'));
+  it('an order under review shows the honest wait and no payment button', async () => {
+    const { screen } = await startApp({
+      signedIn: true,
+      backend: { order: makeOrder({ stage: 'UNDER_REVIEW', status: 'PAID', needsPayment: false }) },
+    });
+
+    await screen.findByTestId('order-track');
+    screen.getByText('نتحقق من كل حوالة يدوياً. نبلّغك هنا أول ما نخلص.');
+    expect(screen.queryByTestId('order-pay')).toBeNull();
   });
 });
 
 describe('packages and product details', () => {
   it('filters by service type', async () => {
-    const { screen } = await startApp({ backend: { catalog: { packages: [PLAN, VIP_PLAN], devices: [], currency: 'IQD' } } });
+    const { screen } = await startApp({ url: '/packages', backend: { catalog: { packages: [PLAN, VIP_PLAN], devices: [], currency: 'IQD' } } });
 
-    fireEvent.press(await screen.findByTestId('tab-packages'));
     await screen.findByTestId(`package-${VIP_PLAN.slug}`);
     fireEvent.press(screen.getByTestId('package-filter-VIP'));
     await waitFor(() => expect(screen.queryByTestId(`package-${PLAN.slug}`)).toBeNull());
@@ -198,13 +162,13 @@ describe('packages and product details', () => {
 
 describe('orders', () => {
   it('guests are asked to sign in', async () => {
-    const { screen } = await startApp();
-    fireEvent.press(await screen.findByTestId('tab-orders'));
+    const { screen } = await startApp({ url: '/orders' });
     await screen.findByTestId('guest-gate');
   });
 
   it('filters by the backend order states and shows each journey', async () => {
     const { screen } = await startApp({
+      url: '/orders',
       signedIn: true,
       backend: {
         order: makeOrder(),
@@ -212,7 +176,6 @@ describe('orders', () => {
       },
     });
 
-    fireEvent.press(await screen.findByTestId('tab-orders'));
     await screen.findByTestId('order-12');
     screen.getByTestId('order-13');
     screen.getByText('ادفع الآن');
@@ -227,11 +190,11 @@ describe('orders', () => {
 describe('notifications', () => {
   it('features the newest unread item and marks everything read', async () => {
     const { screen, backend } = await startApp({
+      url: '/notifications',
       signedIn: true,
       backend: { notifications: [notification(2, { title: 'عرض جديد', type: 'OFFER' }), notification(1, { readAt: new Date().toISOString() })] },
     });
 
-    fireEvent.press(await screen.findByTestId('tab-notifications'));
     const featured = await screen.findByTestId('notification-featured');
     within(featured).getByText('عرض جديد');
     screen.getByTestId('notification-1');
@@ -241,16 +204,14 @@ describe('notifications', () => {
   });
 
   it('guests are asked to sign in', async () => {
-    const { screen } = await startApp();
-    fireEvent.press(await screen.findByTestId('tab-notifications'));
+    const { screen } = await startApp({ url: '/notifications' });
     await screen.findByTestId('guest-gate');
   });
 });
 
 describe('settings and account', () => {
   it('guest settings keep help and legal available', async () => {
-    const { screen } = await startApp();
-    fireEvent.press(await screen.findByTestId('tab-account'));
+    const { screen } = await startApp({ url: '/account' });
     await screen.findByTestId('guest-gate');
     screen.getByText('الدعم والمساعدة');
     screen.getByText('سياسة الخصوصية');
@@ -260,38 +221,36 @@ describe('settings and account', () => {
     jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
       void buttons?.find((button) => button.style === 'destructive')?.onPress?.();
     });
-    const { screen } = await startApp({ signedIn: true });
+    const { screen } = await startApp({ url: '/account', signedIn: true });
 
-    fireEvent.press(await screen.findByTestId('tab-account'));
-    screen.getByText('الحساب والأمان');
+    await screen.findByText('الحساب والأمان');
     screen.getByText('تسجيل الخروج من كل الأجهزة');
     screen.getByText('فحص الإشعارات');
     fireEvent.press(screen.getByTestId('sign-out'));
 
-    await screen.findByTestId('guest-welcome');
+    await screen.findByTestId('guest-store');
     expect(screen.getPathname()).toBe('/');
   });
 });
 
 describe('bottom navigation', () => {
-  it('is a five-tab floating bar without the logo, with selection and unread badge', async () => {
-    const { screen } = await startApp({ signedIn: true, backend: { notifications: [notification(1), notification(2)] } });
+  it('has three tabs: my subscription, the store and help', async () => {
+    const { screen } = await startApp({ signedIn: true });
 
-    const bar = await screen.findByTestId('floating-tab-bar');
-    for (const label of ['الرئيسية', 'الباقات', 'طلباتي', 'حسابي']) within(bar).getByText(label);
-    expect(within(bar).queryByLabelText('شعار شاشتنا')).toBeNull();
-    await waitFor(() => within(bar).getByLabelText('الإشعارات، 2 جديد'));
+    const bar = await screen.findByTestId('bottom-nav');
+    for (const label of ['اشتراكي', 'المتجر', 'مساعدة']) within(bar).getByText(label);
+    expect(within(bar).queryByText('طلباتي')).toBeNull();
 
     expect(screen.getByTestId('tab-index').props.accessibilityState).toMatchObject({ selected: true });
-    fireEvent.press(screen.getByTestId('tab-packages'));
-    await waitFor(() => expect(screen.getByTestId('tab-packages').props.accessibilityState).toMatchObject({ selected: true }));
-    expect(screen.getPathname()).toBe('/packages');
+    fireEvent.press(screen.getByTestId('tab-help'));
+    await waitFor(() => expect(screen.getByTestId('tab-help').props.accessibilityState).toMatchObject({ selected: true }));
+    await screen.findByText('اسأل مساعد شاشتنا');
   });
 });
 
 describe('offline and errors', () => {
-  it('the guest home explains a failed load in Arabic and retries', async () => {
-    const { screen, backend } = await startApp();
+  it('the home explains a failed load in Arabic and retries', async () => {
+    const { screen, backend } = await startApp({ signedIn: true, backend: { dashboard: { primarySubscription: makeSubscription() } } });
     const normal = backend.fetchImpl.getMockImplementation()!;
     let failing = true;
     backend.fetchImpl.mockImplementation((url: string, init?: RequestInit) => (failing ? Promise.reject(new TypeError('Network request failed')) : normal(url, init)));
@@ -299,6 +258,6 @@ describe('offline and errors', () => {
     await screen.findByText('ماكو اتصال', {}, { timeout: 15_000 });
     failing = false;
     fireEvent.press(screen.getByText('إعادة المحاولة'));
-    await screen.findByTestId('promo-spotlight');
+    await screen.findByTestId('subscription-card');
   });
 });

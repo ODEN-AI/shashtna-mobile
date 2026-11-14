@@ -3,16 +3,15 @@ import * as Haptics from 'expo-haptics';
 import type { ComponentProps } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { gradientStyle, linear, radial, RGB } from './gradient';
 import { Text } from './Text';
-import { colors, gradients, radius, shadow, space } from './theme';
+import { colors, palette, radius, space } from './theme';
 
 /**
- * primary  gradient pill — the one main action on a screen
- * light    ice-white pill with navy text — auth and spotlight CTAs on gradients
- * glass    translucent pill — secondary actions (alias: secondary)
+ * primary  solid brand blue — a screen's main action
+ * light    paper white with night text — the one hero action (e.g. «جدّد»)
+ * glass    quiet surface with a hairline — secondary actions (alias: secondary)
  * ghost    text only
- * danger   destructive, calm red glass
+ * danger   destructive, calm red
  */
 type Variant = 'primary' | 'light' | 'glass' | 'secondary' | 'ghost' | 'danger' | 'glow';
 
@@ -26,8 +25,6 @@ const FOREGROUND: Record<Variant, string> = {
   danger: colors.danger,
 };
 
-const PRIMARY = gradientStyle(radial(RGB.ice, 0.14, '50% 0%', '70%'), linear(100, gradients.primary));
-
 export function Button({
   title,
   onPress,
@@ -37,6 +34,7 @@ export function Button({
   loading,
   disabled,
   compact,
+  size,
   style,
   testID,
   accessibilityHint,
@@ -50,6 +48,8 @@ export function Button({
   loading?: boolean;
   disabled?: boolean;
   compact?: boolean;
+  /** lg: the 56dp hero action. */
+  size?: 'lg';
   style?: StyleProp<ViewStyle>;
   testID?: string;
   accessibilityHint?: string;
@@ -72,6 +72,7 @@ export function Button({
       style={({ pressed }) => [
         styles.base,
         compact && styles.compact,
+        size === 'lg' && styles.large,
         VARIANT_STYLE[variant],
         pressed && !inactive && styles.pressed,
         inactive && styles.disabled,
@@ -83,7 +84,7 @@ export function Button({
       ) : (
         <View style={styles.row}>
           {icon ? <Ionicons name={icon} size={compact ? 16 : 19} color={color} /> : null}
-          <Text variant="label" color={color} numberOfLines={1} style={{ fontSize: compact ? 13.5 : 15.5, flexShrink: 1 }}>
+          <Text variant="label" color={color} numberOfLines={1} style={{ fontSize: compact ? 13.5 : size === 'lg' ? 17 : 15.5, flexShrink: 1 }}>
             {title}
           </Text>
           {iconEnd ? <Ionicons name={iconEnd} size={compact ? 16 : 19} color={color} /> : null}
@@ -104,16 +105,15 @@ export function GlassButton(props: Omit<ComponentProps<typeof Button>, 'variant'
 }
 
 const glass: ViewStyle = {
-  backgroundColor: colors.glassStrong,
+  backgroundColor: colors.surface2,
   borderWidth: 1,
-  borderColor: colors.glassBorder,
-  borderTopColor: colors.glassEdge,
+  borderColor: colors.lineStrong,
 };
 
 const VARIANT_STYLE: Record<Variant, ViewStyle> = {
-  primary: { ...PRIMARY, backgroundColor: colors.brand, boxShadow: shadow.glowSoft },
-  glow: { ...PRIMARY, backgroundColor: colors.brand, boxShadow: shadow.glowSoft },
-  light: { backgroundColor: '#F3F8FF', boxShadow: shadow.card },
+  primary: { backgroundColor: colors.brand },
+  glow: { backgroundColor: colors.brand },
+  light: { backgroundColor: palette.paper },
   glass,
   secondary: glass,
   ghost: { backgroundColor: 'transparent' },
@@ -122,14 +122,15 @@ const VARIANT_STYLE: Record<Variant, ViewStyle> = {
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 54,
-    borderRadius: radius.pill,
+    minHeight: 52,
+    borderRadius: radius.lg,
     paddingHorizontal: space.xl,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   compact: { minHeight: 44, paddingHorizontal: space.lg },
+  large: { minHeight: 56 },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm },
   pressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
   disabled: { opacity: 0.5 },
