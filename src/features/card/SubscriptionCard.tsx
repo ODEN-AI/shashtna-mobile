@@ -15,7 +15,7 @@ export function cardLook(subscription: Subscription): Look {
   return 'running';
 }
 
-/** Solid light ink on the brand face (≥ 7:1), never alpha-tinted white. */
+/** Solid light ink on the brand face (about 4.9:1, AA), never alpha-tinted white. */
 const ON_FACE = '#E3EAFF';
 const SCALE = 1.15;
 
