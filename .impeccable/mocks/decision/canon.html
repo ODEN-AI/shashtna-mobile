@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390,height=844">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 390px; height: 844px; overflow: hidden; }
+  body { background: #0b0e17; color: #e8ecf4; font-family: "Noto Sans Arabic", system-ui, sans-serif; }
+  .top { padding: 44px 20px 16px; display: flex; justify-content: space-between; align-items: center; }
+  .top b { font-size: 20px; }
+  .top small { display: block; color: #8a92a6; font-size: 14px; }
+  .av { width: 44px; height: 44px; border-radius: 22px; background: #151a26; }
+  .sub { margin: 0 20px; background: #151a26; border-radius: 16px; padding: 18px; }
+  .sub .r { display: flex; justify-content: space-between; font-size: 14px; color: #8a92a6; }
+  .sub .r b { color: #e8ecf4; font-size: 16px; }
+  .sub .pill { color: #4ade80; font-size: 12px; background: rgba(74,222,128,.12); border-radius: 999px; padding: 2px 10px; }
+  .sub .d { margin-top: 14px; font-size: 32px; font-weight: 800; }
+  .bar { height: 6px; border-radius: 3px; background: #252b3a; margin-top: 12px; }
+  .bar i { display: block; height: 6px; width: 38%; border-radius: 3px; background: #2456e6; }
+  .btn { margin-top: 16px; height: 48px; border-radius: 12px; background: #2456e6; display: grid; place-items: center; font-weight: 700; }
+  .quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px; }
+  .quick div { height: 76px; background: #151a26; border-radius: 14px; font-size: 12px; color: #8a92a6; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 10px; }
+  .quick div::before { content: ""; width: 26px; height: 26px; border-radius: 8px; background: #22293a; margin-bottom: 8px; }
+  .h { margin: 6px 20px 10px; font-size: 16px; font-weight: 700; }
+  .ord { margin: 0 20px; background: #151a26; border-radius: 16px; padding: 14px 16px; font-size: 14px; display: flex; justify-content: space-between; }
+  .ord span { color: #f5b14a; }
+  .tabs { position: absolute; bottom: 0; right: 0; left: 0; height: 80px; background: #10131d; display: flex; justify-content: space-around; padding-top: 14px; font-size: 12px; color: #8a92a6; }
+  .tabs .on { color: #e8ecf4; font-weight: 700; }
+  .tabs div::before { content: ""; display: block; width: 22px; height: 22px; margin: 0 auto 4px; border: 2px solid currentColor; border-radius: 6px; }
+</style>
+</head>
+<body>
+  <div class="top"><div><small>مرحباً</small><b>أبو علي</b></div><div class="av"></div></div>
+  <div class="sub">
+    <div class="r"><b>IPTV · سنة</b><span class="pill">فعّال</span></div>
+    <div class="d">47 يوم</div>
+    <div class="r"><span>ينتهي ٣١ كانون الأول ٢٠٢٦</span></div>
+    <div class="bar"><i></i></div>
+    <div class="btn">تجديد الاشتراك</div>
+  </div>
+  <div class="quick"><div>الباقات</div><div>نقاطي</div><div>الدعم</div><div>شاشتنا بلير</div></div>
+  <div class="h">آخر طلب</div>
+  <div class="ord"><b>#1042 تجديد سنة</b><span>قيد المراجعة</span></div>
+  <div class="tabs"><div class="on">الرئيسية</div><div>الباقات</div><div>طلباتي</div><div>حسابي</div></div>
+</body>
+</html>

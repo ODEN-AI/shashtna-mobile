@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=390,height=844">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 390px; height: 844px; overflow: hidden; }
+  body { background: #0b0e17; color: #f2efe6; font-family: "Noto Sans Arabic", system-ui, sans-serif; }
+  .top { padding: 44px 24px 18px; display: flex; justify-content: space-between; font-size: 15px; color: #a9b0c4; }
+  .top b { color: #f2efe6; font-size: 20px; display: block; }
+  .wallet { margin: 0 24px; background: #1c2a5a; border-radius: 16px; padding: 18px; }
+  .wallet .h { display: flex; justify-content: space-between; font-size: 14px; color: #c9d2ee; }
+  .wallet .h b { color: #fff; font-size: 17px; }
+  .coupons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; }
+  .c { height: 64px; background: #f2efe6; color: #1c2a5a; border-radius: 6px; display: grid; place-items: center; font-weight: 800; font-size: 15px; position: relative; }
+  .c::after { content: ""; position: absolute; top: 0; bottom: 0; left: -5px; border-left: 2px dashed #1c2a5a; }
+  .c.used { background: transparent; border: 1px dashed #4b5a8c; color: #4b5a8c; }
+  .c.used::before { content: "مُستخدم"; position: absolute; transform: rotate(-14deg); color: #d43a2f; font-size: 11px; border: 1.5px solid #d43a2f; padding: 0 4px; border-radius: 3px; }
+  .wallet .left { margin-top: 14px; font-size: 14px; color: #c9d2ee; }
+  .wallet .left b { font-size: 22px; color: #fff; }
+  .renew { margin: 18px 24px 0; height: 56px; border-radius: 14px; background: #d43a2f; display: flex; justify-content: center; align-items: center; font-size: 18px; font-weight: 800; }
+  .stub { margin: 22px 24px 0; background: #f2efe6; color: #1c2a5a; border-radius: 12px; padding: 14px 16px; position: relative; }
+  .stub h3 { font-size: 15px; display: flex; justify-content: space-between; }
+  .stub h3 span { color: #6a4fb3; font-size: 13px; }
+  .stamp { position: absolute; left: 16px; bottom: 12px; color: #6a4fb3; border: 2px solid #6a4fb3; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 13px; transform: rotate(-8deg); }
+  .stub p { margin-top: 8px; font-size: 13px; width: 70%; }
+  .tabs { position: absolute; bottom: 0; right: 0; left: 0; height: 80px; background: #10131d; display: flex; justify-content: space-around; padding-top: 14px; font-size: 12px; color: #8a92a6; }
+  .tabs .on { color: #f2efe6; font-weight: 700; }
+  .tabs div::before { content: ""; display: block; width: 22px; height: 22px; margin: 0 auto 4px; border: 2px solid currentColor; border-radius: 6px; }
+</style>
+</head>
+<body>
+  <div class="top"><div>هلا بيك<b>أبو علي</b></div></div>
+  <div class="wallet">
+    <div class="h"><b>دفتر IPTV · سنة</b><span>حتى ٣١ كانون الأول</span></div>
+    <div class="coupons">
+      <div class="c used">ك٢</div><div class="c used">ت١</div><div class="c">ت٢</div><div class="c">ك١</div>
+    </div>
+    <div class="left"><b>47</b> يوم باقي بآخر كوبون</div>
+  </div>
+  <div class="renew">جدّد · ضيف كوبونات</div>
+  <div class="stub">
+    <h3>طلب #1042 <span>تجديد سنة</span></h3>
+    <p>استلمنا حوالتك ونتحقق منها. عادةً خلال ساعة.</p>
+    <div class="stamp">نتحقق</div>
+  </div>
+  <div class="tabs"><div class="on">اشتراكي</div><div>المتجر</div><div>مساعدة</div></div>
+</body>
+</html>
