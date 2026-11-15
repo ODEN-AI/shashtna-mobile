@@ -15,10 +15,10 @@ import { Text } from '@/src/ui/Text';
 import { colors, space } from '@/src/ui/theme';
 
 /**
- * «مساعدة»: one calm list. The assistant, tickets, points and receipts are the
+ * «الدعم»: one calm list. The assistant, tickets, points and receipts are the
  * website's own pages inside the app; contact channels come from Admin → Settings.
  */
-export default function HelpTab() {
+export default function SupportTab() {
   const { status } = useAuth();
   const signedIn = status === 'signedIn';
   const insets = useSafeAreaInsets();
@@ -36,9 +36,9 @@ export default function HelpTab() {
   };
 
   return (
-    <Screen tabBar edges={[]} refreshing={help.isRefetching} onRefresh={() => void help.refetch()} contentStyle={{ paddingTop: insets.top + space.lg, paddingHorizontal: space.xl }}>
-      <Text variant="title" accessibilityRole="header">
-        مساعدة
+    <Screen tabBar edges={[]} refreshing={help.isRefetching} onRefresh={() => void help.refetch()} contentStyle={{ paddingTop: insets.top + space.lg, paddingHorizontal: space.lg, gap: space.xl }}>
+      <Text variant="title" weight="bold" accessibilityRole="header">
+        الدعم
       </Text>
 
       {!signedIn ? (
@@ -60,7 +60,6 @@ export default function HelpTab() {
         <ListRow icon="star-outline" tone="warning" title="نقاط شاشتنا" onPress={() => member('/points', 'نقاط شاشتنا')} />
         <ListRow icon="document-text-outline" tone="info" title="الإيصالات" onPress={() => member('/receipts', 'الإيصالات')} />
         <ListRow icon="notifications-outline" tone="info" title="الإشعارات" onPress={() => (signedIn ? router.push('/notifications') : member('/notifications', 'الإشعارات'))} />
-        <ListRow icon="person-circle-outline" tone="neutral" title="الحساب والإعدادات" onPress={() => router.push('/account')} />
       </SettingsGroup>
 
       {support && (support.whatsapp || support.telegram || support.phone) ? (

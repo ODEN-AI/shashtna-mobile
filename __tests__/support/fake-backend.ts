@@ -110,6 +110,8 @@ export type BackendState = {
   dashboard: Partial<Dashboard>;
   /** Extra orders listed on the orders screen (besides `order`). */
   orders: Order[];
+  /** The customer's subscriptions («اشتراكي»). */
+  subscriptions: Subscription[];
 };
 
 export function createBackend(initial: Partial<BackendState> = {}) {
@@ -123,6 +125,7 @@ export function createBackend(initial: Partial<BackendState> = {}) {
     status: { overall: 'OPERATIONAL', active: [], resolved: [] },
     dashboard: {},
     orders: [],
+    subscriptions: [],
     ...initial,
   };
   const user = { id: 7, name: 'علي حسن', phone: '07700000000', email: null, role: 'CUSTOMER', isStaff: false, preferredContact: null, renewalReminders: true, marketingOptIn: false, createdAt: now };
@@ -206,6 +209,8 @@ export function createBackend(initial: Partial<BackendState> = {}) {
     }
 
     if (path === '/api/mobile/orders') return json(200, { success: true, orders: [...(state.order ? [state.order] : []), ...state.orders] });
+
+    if (path === '/api/mobile/subscriptions') return json(200, { success: true, subscriptions: state.subscriptions });
 
     const orderMatch = path.match(/^\/api\/mobile\/orders\/(\d+)$/);
     if (orderMatch) return state.order ? json(200, { success: true, order: state.order }) : json(404, { success: false, message: 'الطلب غير موجود.' });

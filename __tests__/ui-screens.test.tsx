@@ -26,17 +26,28 @@ const notification = (id: number, extra: Partial<AppNotification> = {}): AppNoti
 });
 
 describe('guest home', () => {
-  it('shows the empty card, the store and sign-in without asking for account data', async () => {
-    const { screen, backend } = await startApp({ onboarded: false });
+  it('shows what Shashtna is and real packages, without asking for account data', async () => {
+    const { screen, backend } = await startApp();
 
-    await screen.findByTestId('empty-card');
-    screen.getByText('اشتراكك يصير هنا');
-    expect(screen.queryByTestId('onboarding')).toBeNull();
+    await screen.findByTestId('guest-welcome');
+    screen.getByText('ليش تختار شاشتنا؟');
+    await screen.findByTestId(`guest-package-${PLAN.slug}`);
+    screen.getByText('25,000');
     expect(authedCalls(backend)).toEqual([]);
 
     fireEvent.press(screen.getByTestId('guest-store'));
-    await waitFor(() => expect(screen.getPathname()).toBe('/store'));
-    screen.getByTestId('web-page');
+    await waitFor(() => expect(screen.getPathname()).toBe('/packages'));
+  });
+
+  it('first launch shows the four onboarding steps, then the guest home', async () => {
+    const { screen } = await startApp({ onboarded: false });
+
+    await screen.findByTestId('onboarding');
+    screen.getByText('الخطوة 1 من 4');
+    fireEvent.press(screen.getByTestId('onboarding-next'));
+    await screen.findByText('اختار باقتك بسهولة');
+    fireEvent.press(screen.getByTestId('onboarding-skip'));
+    await screen.findByTestId('guest-welcome');
   });
 });
 
@@ -78,58 +89,77 @@ describe('login and register', () => {
 });
 
 describe('customer home', () => {
-  it('active subscriber: the card shows days left and the end date, with one renew button', async () => {
+  it('active subscriber: the dial shows days left and the end date, with renew and details', async () => {
     const { screen } = await startApp({
       signedIn: true,
       backend: { dashboard: { accountState: 'ACTIVE', primarySubscription: makeSubscription(), nextAction: null } },
     });
 
+    await screen.findByText('يا هلا بيك، علي 👋');
     const card = await screen.findByTestId('subscription-card');
-    within(card).getByText('IPTV شهر');
-    await waitFor(() => within(card).getByText('20'));
-    within(card).getByText(/^ينتهي /);
-    screen.getByText('جدّد اشتراكك');
+    within(card).getByText('20');
+    within(card).getByText('اشتراكك شغّال');
+    within(card).getByText(/^ينتهي في /);
+    within(card).getByText('جدّد اشتراكك هسه');
     expect(screen.queryByTestId('order-track')).toBeNull();
+    screen.getByTestId('quick-services');
   });
 
-  it('renewing opens the website checkout for that subscription inside the app', async () => {
+  it('renewing opens that package in renewal mode with its renewal price', async () => {
     const { screen } = await startApp({
       signedIn: true,
-      backend: { dashboard: { accountState: 'ACTIVE', primarySubscription: makeSubscription(), nextAction: null } },
+      backend: { dashboard: { accountState: 'ACTIVE', primarySubscription: makeSubscription({ packageSlug: PLAN.slug }), nextAction: null } },
     });
 
     fireEvent.press(await screen.findByTestId('home-renew'));
-    await waitFor(() => expect(screen.getPathname()).toBe('/web'));
-    screen.getByTestId('web-page');
+    await waitFor(() => expect(screen.getPathname()).toBe(`/packages/${PLAN.slug}`));
+    await screen.findByText('متابعة التجديد والدفع');
+    screen.getByText('تجديد');
   });
 
-  it('expiring and ended cards say so plainly', async () => {
+  it('expiring and ended subscriptions say so plainly', async () => {
     const soon = await startApp({
       signedIn: true,
       backend: { dashboard: { accountState: 'EXPIRING', primarySubscription: makeSubscription({ state: 'EXPIRING', daysRemaining: 3 }), nextAction: null } },
     });
-    await soon.screen.findByText(/^قرب ينتهي/);
-    soon.screen.getByText('أيام باقية');
+    await soon.screen.findByText('تنبيه انتهاء الاشتراك');
+    soon.screen.getByText('اشتراكك ينتهي قريباً');
     soon.screen.unmount();
 
     const { screen } = await startApp({
       signedIn: true,
       backend: { dashboard: { accountState: 'EXPIRED', primarySubscription: makeSubscription({ state: 'EXPIRED', daysRemaining: 0 }), nextAction: null } },
     });
-    const card = await screen.findByTestId('subscription-card');
-    within(card).getByText('انتهى');
+    await screen.findByText('اشتراكك منتهي');
     screen.getByText('رجّع اشتراكك');
   });
 
-  it('an order under review shows the honest wait and no payment button', async () => {
+  it('an order under review shows the manual check, and tracking opens the timeline', async () => {
     const { screen } = await startApp({
       signedIn: true,
       backend: { order: makeOrder({ stage: 'UNDER_REVIEW', status: 'PAID', needsPayment: false }) },
     });
 
-    await screen.findByTestId('order-track');
-    screen.getByText('نتحقق من كل حوالة يدوياً. نبلّغك هنا أول ما نخلص.');
+    const mini = await screen.findByTestId('order-track');
+    within(mini).getByText('فريقنا يدقق الحوالة يدوياً هسه');
     expect(screen.queryByTestId('order-pay')).toBeNull();
+
+    fireEvent.press(within(mini).getByText('تابع طلبك'));
+    await screen.findByTestId('order-timeline');
+    screen.getByText('طلبك بين أيدي فريقنا هسه');
+  });
+});
+
+describe('my subscription tab', () => {
+  it('shows the subscription hub with days left, dates and the ways to watch and renew', async () => {
+    const { screen } = await startApp({ signedIn: true, backend: { subscriptions: [makeSubscription()] } });
+
+    fireEvent.press(await screen.findByTestId('tab-subscription'));
+    const hub = await screen.findByTestId('subscription-card');
+    within(hub).getByText('IPTV شهر');
+    within(hub).getByText('باقي 20 يوم');
+    screen.getByText('شاهد الآن عبر Shashtna Player');
+    screen.getByTestId('subscription-credentials');
   });
 });
 
@@ -146,7 +176,7 @@ describe('packages and product details', () => {
   it('shows the product with its facts, benefits, price and one primary action', async () => {
     const { screen } = await startApp({ url: `/packages/${PLAN.slug}` });
 
-    await screen.findByText('شنو تحصل');
+    await screen.findByText('محتويات ومميزات الباقة');
     screen.getByText('4K');
     screen.getByText('1 Year');
     expect(screen.getAllByText('25,000 د.ع').length).toBeGreaterThan(0);
@@ -234,16 +264,15 @@ describe('settings and account', () => {
 });
 
 describe('bottom navigation', () => {
-  it('has three tabs: my subscription, the store and help', async () => {
+  it('has the five Stitch tabs with «اشتراكي» raised in the middle', async () => {
     const { screen } = await startApp({ signedIn: true });
 
     const bar = await screen.findByTestId('bottom-nav');
-    for (const label of ['اشتراكي', 'المتجر', 'مساعدة']) within(bar).getByText(label);
-    expect(within(bar).queryByText('طلباتي')).toBeNull();
+    for (const label of ['الرئيسية', 'الباقات', 'اشتراكي', 'الدعم', 'حسابي']) within(bar).getByText(label);
 
     expect(screen.getByTestId('tab-index').props.accessibilityState).toMatchObject({ selected: true });
-    fireEvent.press(screen.getByTestId('tab-help'));
-    await waitFor(() => expect(screen.getByTestId('tab-help').props.accessibilityState).toMatchObject({ selected: true }));
+    fireEvent.press(screen.getByTestId('tab-support'));
+    await waitFor(() => expect(screen.getByTestId('tab-support').props.accessibilityState).toMatchObject({ selected: true }));
     await screen.findByText('اسأل مساعد شاشتنا');
   });
 });

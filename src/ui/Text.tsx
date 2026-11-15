@@ -1,19 +1,29 @@
-import { Text as RNText, type TextProps, type TextStyle } from 'react-native';
+import { StyleSheet, Text as RNText, type TextProps, type TextStyle } from 'react-native';
 
-import { colors, font } from './theme';
+import { colors, font, fontFamily } from './theme';
 
-type Variant = 'display' | 'hero' | 'title' | 'heading' | 'body' | 'label' | 'caption' | 'mono';
+type Variant = 'display' | 'hero' | 'title' | 'heading' | 'body' | 'label' | 'caption' | 'micro' | 'mono';
 
+/** The Stitch type scale (IBM Plex Sans Arabic). Arabic needs the generous line heights. */
 const VARIANTS: Record<Variant, TextStyle> = {
-  display: { fontSize: font.size.display, fontWeight: font.weight.heavy, lineHeight: 84, letterSpacing: -2 },
-  hero: { fontSize: font.size.hero, fontWeight: font.weight.heavy, lineHeight: 42 },
-  title: { fontSize: font.size.xxl, fontWeight: font.weight.heavy, lineHeight: 34 },
-  heading: { fontSize: font.size.lg, fontWeight: font.weight.bold, lineHeight: 26 },
-  body: { fontSize: font.size.md, fontWeight: font.weight.regular, lineHeight: 24 },
-  label: { fontSize: font.size.sm, fontWeight: font.weight.bold, lineHeight: 20 },
-  caption: { fontSize: font.size.xs, fontWeight: font.weight.medium, lineHeight: 18 },
-  mono: { fontSize: font.size.lg, fontWeight: font.weight.bold, letterSpacing: 0.5, writingDirection: 'ltr' },
+  display: { fontSize: 36, fontWeight: '700', lineHeight: 44 }, // headline-xl
+  hero: { fontSize: 28, fontWeight: '700', lineHeight: 36 }, // headline-xl-mobile
+  title: { fontSize: 22, fontWeight: '600', lineHeight: 30 }, // headline-lg-mobile
+  heading: { fontSize: 18, fontWeight: '600', lineHeight: 26 }, // title-lg
+  body: { fontSize: 14, fontWeight: '400', lineHeight: 22 }, // body-md
+  label: { fontSize: 14, fontWeight: '600', lineHeight: 20 }, // label-lg
+  caption: { fontSize: 12, fontWeight: '400', lineHeight: 18 }, // body-sm
+  micro: { fontSize: 10, fontWeight: '700', lineHeight: 14 }, // label-sm
+  mono: { fontSize: 16, fontWeight: '600', letterSpacing: 0.5, writingDirection: 'ltr' },
 };
+
+function familyFor(weight: TextStyle['fontWeight']) {
+  const value = Number(weight ?? 400);
+  if (value >= 700 || weight === 'bold') return fontFamily.bold;
+  if (value >= 600) return fontFamily.semibold;
+  if (value >= 500) return fontFamily.medium;
+  return fontFamily.regular;
+}
 
 export function Text({
   variant = 'body',
@@ -23,15 +33,14 @@ export function Text({
   style,
   ...props
 }: TextProps & { variant?: Variant; color?: string; weight?: keyof typeof font.weight; center?: boolean }) {
+  const flat = StyleSheet.flatten([VARIANTS[variant], weight ? { fontWeight: font.weight[weight] } : null, style]) ?? {};
+  // Android picks a bundled weight by family name; a synthesized fontWeight on top would double-bold it.
+  const family = flat.fontFamily && !flat.fontFamily.startsWith('IBMPlexSansArabic') ? flat.fontFamily : familyFor(flat.fontWeight);
+
   return (
     <RNText
       maxFontSizeMultiplier={1.4}
-      style={[
-        { fontFamily: font.family, color, textAlign: center ? 'center' : 'left' },
-        VARIANTS[variant],
-        weight ? { fontWeight: font.weight[weight] } : null,
-        style,
-      ]}
+      style={[{ color, textAlign: center ? 'center' : 'left' }, flat, { fontFamily: family, fontWeight: undefined }]}
       {...props}
     />
   );

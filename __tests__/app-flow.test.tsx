@@ -22,7 +22,7 @@ describe('customer journey (router + providers + API client)', () => {
     const { screen, backend } = await startApp({ url: '/packages' });
 
     // Packages are open to guests.
-    fireEvent.press(await screen.findByTestId('package-iptv-year'));
+    fireEvent.press(await screen.findByTestId('order-iptv-year'));
     fireEvent.press(await screen.findByTestId('order-package'));
 
     // Ordering needs an account: login, then straight on to checkout.
@@ -56,7 +56,7 @@ describe('customer journey (router + providers + API client)', () => {
     // Then «اشتراكي», following the new order with its one next step.
     await screen.findByText('وصلنا طلبك. الخطوة الجاية: حوّل المبلغ وارفع صورة الحوالة.');
     expect(backend.state.calls.some((call) => call.path === '/api/mobile/dashboard?order=12')).toBe(true);
-    await screen.findByText('طلبك الحالي');
+    await screen.findByTestId('order-track');
     expect(screen.getAllByText('25,000 د.ع').length).toBeGreaterThan(0);
     expect(screen.getPathname()).toBe('/');
 
@@ -75,7 +75,7 @@ describe('customer journey (router + providers + API client)', () => {
     fireEvent.press(screen.getByTestId('login-submit'));
 
     await screen.findByText('ما عندك اشتراك بعد');
-    expect(screen.getByText('اختار باقتك')).toBeTruthy();
+    expect(screen.getAllByText('تصفح الباقات').length).toBeGreaterThan(0);
     expect(screen.queryByTestId('guest-store')).toBeNull();
     expect(screen.getPathname()).toBe('/');
   });

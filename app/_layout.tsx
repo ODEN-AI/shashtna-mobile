@@ -1,3 +1,10 @@
+import {
+  IBMPlexSansArabic_400Regular,
+  IBMPlexSansArabic_500Medium,
+  IBMPlexSansArabic_600SemiBold,
+  IBMPlexSansArabic_700Bold,
+  useFonts,
+} from '@expo-google-fonts/ibm-plex-sans-arabic';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { DarkTheme, router, Stack, ThemeProvider, type ErrorBoundaryProps } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -51,16 +58,16 @@ export const unstable_settings = { initialRouteName: '(app)' };
  *    account screens (checkout, orders, subscriptions…) ask them to sign in
  *  - login/register exist only while signed out
  */
-function RootNavigator() {
+function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const { status, signOutReason } = useAuth();
   const onboarding = useOnboarding();
   const previous = useRef(status);
 
   useEffect(() => {
-    if (status !== 'restoring' && onboarding.status !== 'loading') {
+    if (fontsReady && status !== 'restoring' && onboarding.status !== 'loading') {
       SplashScreen.hide();
     }
-  }, [status, onboarding.status]);
+  }, [fontsReady, status, onboarding.status]);
 
   // Auth transitions: continue where a guest was headed after signing in;
   // after signing out, land on the guest home (or on login when the session
@@ -84,13 +91,13 @@ function RootNavigator() {
     }
   }, [status, signOutReason]);
 
-  if (status === 'restoring' || onboarding.status === 'loading') {
+  // The splash screen stays up until the bundled Arabic font is ready (a failed load falls back to the system font).
+  if (!fontsReady || status === 'restoring' || onboarding.status === 'loading') {
     return null;
   }
 
   const signedIn = status === 'signedIn';
-  // The old welcome carousel is retired: the home card explains itself.
-  const onboarded = true;
+  const onboarded = onboarding.status === 'done';
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.canvas }, animation: 'fade' }}>
@@ -109,6 +116,12 @@ function RootNavigator() {
 
 export default function RootLayout() {
   const [queryClient] = useState(createQueryClient);
+  const [fontsLoaded, fontError] = useFonts({
+    IBMPlexSansArabic_400Regular,
+    IBMPlexSansArabic_500Medium,
+    IBMPlexSansArabic_600SemiBold,
+    IBMPlexSansArabic_700Bold,
+  });
 
   return (
     <SafeAreaProvider style={{ backgroundColor: colors.canvas }}>
@@ -128,7 +141,7 @@ export default function RootLayout() {
                 <ThemeProvider value={navigationTheme}>
                   <StatusBar style="light" />
                   <UpdateGate>
-                    <RootNavigator />
+                    <RootNavigator fontsReady={fontsLoaded || Boolean(fontError)} />
                   </UpdateGate>
                 </ThemeProvider>
               </ToastProvider>

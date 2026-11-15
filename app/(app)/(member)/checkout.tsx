@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ApiError, errorMessage } from '@/src/api/client';
 import type { Checkout, ContactOption } from '@/src/api/types';
 import { formatPrice } from '@/src/lib/format';
-import { useCheckout, useCreateOrder } from '@/src/query/hooks';
+import { useCatalog, useCheckout, useCreateOrder } from '@/src/query/hooks';
 import { Badge } from '@/src/ui/Badge';
 import { Button } from '@/src/ui/Button';
 import { Card } from '@/src/ui/Card';
@@ -38,9 +38,10 @@ const TITLES: Record<Checkout['mode'], string> = {
  * on the dashboard after the order exists.
  */
 export default function CheckoutScreen() {
-  const params = useLocalSearchParams<{ plan?: string; renew?: string; upgrade?: string; device?: string }>();
+  const params = useLocalSearchParams<{ plan?: string; option?: string; renew?: string; upgrade?: string; device?: string }>();
   const query = useCheckout({
     plan: params.plan,
+    option: Number(params.option) || undefined,
     renew: Number(params.renew) || undefined,
     upgrade: Number(params.upgrade) || undefined,
     device: Number(params.device) || undefined,
@@ -79,10 +80,15 @@ function CheckoutBody({ data }: { data: Checkout }) {
   const [deviceId, setDeviceId] = useState<number | null>(data.initialDeviceId);
   const [contact, setContact] = useState<ContactOption>(data.initialContact);
   const [note, setNote] = useState('');
+  const [email, setEmail] = useState('');
+  const catalog = useCatalog();
+  // Platforms delivered on the customer's own account need its e-mail (the server checks it again).
+  const groupId = catalog.data?.packages.find((pkg) => pkg.slug === data.plan?.slug)?.groupId;
+  const needsEmail = data.mode !== 'RENEW' && catalog.data?.groups?.find((group) => group.id === groupId)?.delivery === 'CUSTOMER_EMAIL';
 
   const needsDevice = data.devices.length > 0 || (data.plan?.serviceType === 'VIP' && data.mode !== 'RENEW');
   const device = data.device ?? data.devices.find((item) => item.id === deviceId) ?? null;
-  const ready = !needsDevice || Boolean(device);
+  const ready = (!needsDevice || Boolean(device)) && (!needsEmail || /^\S+@\S+\.\S+$/.test(email.trim()));
   const total = (data.plan?.price ?? 0) + (device ? device.price : 0);
   let step = 0;
 
@@ -91,7 +97,9 @@ function CheckoutBody({ data }: { data: Checkout }) {
       const result = await createOrder.mutateAsync({
         requestType: data.mode,
         planSlug: data.plan?.slug,
+        optionId: data.plan?.optionId ?? undefined,
         deviceId: device?.id,
+        deliveryEmail: needsEmail ? email.trim() : undefined,
         subscriptionId: data.subscription?.id,
         contactMethod: contact,
         customerNote: note.trim() || undefined,
@@ -116,7 +124,7 @@ function CheckoutBody({ data }: { data: Checkout }) {
             </Text>
           </View>
           <Button
-            title={ready ? 'تأكيد الطلب' : 'اختار الجهاز أولًا'}
+            title={ready ? 'تأكيد الطلب' : needsDevice && !device ? 'اختار الجهاز أولًا' : 'اكتب إيميل حسابك'}
             icon="checkmark-circle"
             disabled={!ready}
             loading={createOrder.isPending}
@@ -198,6 +206,13 @@ function CheckoutBody({ data }: { data: Checkout }) {
           </View>
         ) : null}
       </Section>
+
+      {needsEmail ? (
+        <Section index={++step} title="إيميل حسابك على المنصة">
+          <Text color={colors.ink2}>نفعّل الاشتراك على هذا الإيميل.</Text>
+          <Field label="الإيميل" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" testID="checkout-email" />
+        </Section>
+      ) : null}
 
       <Section index={++step} title="طريقة التواصل">
         <Text color={colors.ink2}>شلون تحب نتواصل وياك بخصوص هذا الطلب؟</Text>

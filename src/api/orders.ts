@@ -1,12 +1,16 @@
 import { request } from './client';
 import type { Checkout, ContactOption, Order, OrderDetail, RequestType, Subscription, SubscriptionDetail } from './types';
 
-export type CheckoutParams = { plan?: string; renew?: number; upgrade?: number; device?: number };
+export type CheckoutParams = { plan?: string; option?: number; renew?: number; upgrade?: number; device?: number };
 
 export type CreateOrderInput = {
   requestType: RequestType;
   planSlug?: string;
+  /** The chosen length (package option); the server prices it. */
+  optionId?: number;
   deviceId?: number;
+  /** Digital platforms activated on the customer's own account. */
+  deliveryEmail?: string;
   contactMethod: ContactOption;
   subscriptionId?: number;
   customerNote?: string;

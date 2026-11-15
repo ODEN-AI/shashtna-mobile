@@ -1,9 +1,13 @@
 import { request } from './client';
-import type { Catalog, Content, ContentItem, Dashboard, Help, ServiceStatus } from './types';
+import type { Catalog, Content, ContentItem, Dashboard, Help, Loyalty, ServiceStatus } from './types';
 
 export const dashboardApi = {
   get: (highlightOrderId?: number | null) =>
     request<Dashboard>(`/api/mobile/dashboard${highlightOrderId ? `?order=${highlightOrderId}` : ''}`),
+};
+
+export const loyaltyApi = {
+  get: () => request<{ loyalty: Loyalty }>('/api/mobile/loyalty'),
 };
 
 export const catalogApi = {

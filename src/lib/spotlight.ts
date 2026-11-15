@@ -74,7 +74,7 @@ export function packageItem(pkg: Package): SpotlightItem {
     price: formatPrice(pkg.price),
     meta: pkg.durationLabel,
     imageUrl: pkg.imageUrl,
-    serviceType: pkg.serviceType,
+    serviceType: pkg.serviceType === 'DIGITAL' ? null : pkg.serviceType,
     highlight: pkg.isPopular,
     cta: 'شوف الباقة',
     target: { href: { pathname: '/packages/[slug]', params: { slug: pkg.slug } } },

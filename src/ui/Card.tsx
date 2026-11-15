@@ -14,7 +14,7 @@ type Props = {
   testID?: string;
 };
 
-/** The standard surface: one tonal step above the night canvas, with a hairline. */
+/** The standard Stitch card: surface-container on the navy canvas, 12 radius, no stroke. */
 export function GlassCard({ children, style, onPress, accessibilityLabel, accessibilityHint, glow, testID }: Props) {
   if (onPress) {
     return (
@@ -46,12 +46,11 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: colors.line,
     padding: space.lg,
     overflow: 'hidden',
   },
   glow: {
+    borderWidth: 1,
     borderColor: colors.brand,
   },
   pressed: { opacity: 0.9, transform: [{ scale: 0.99 }] },

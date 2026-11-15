@@ -32,7 +32,48 @@ export type User = {
 
 export type Session = { token: string; expiresAt: number; user: User };
 
-export type ServiceType = 'IPTV' | 'VIP';
+export type ServiceType = 'IPTV' | 'VIP' | 'DIGITAL';
+
+export type CatalogDiscount = {
+  id: number;
+  kind: 'PERCENT' | 'AMOUNT';
+  value: number;
+  appliesToRenewals: boolean;
+  endsAt: string | null;
+  endsInDays: number | null;
+  /** What a NEW order of this length costs after the discount (package part). */
+  price: number;
+  /** Renewal price after the discount, or null when renewals keep their price. */
+  renewalPrice: number | null;
+};
+
+/** One length a package is sold in, with its own price (computed on the server). */
+export type PackageOption = {
+  id: number;
+  durationMonths: number;
+  durationLabel: string;
+  price: number;
+  renewalPrice: number;
+  pointsEarned: number | null;
+  discount: CatalogDiscount | null;
+};
+
+/** A section of the plans page: IPTV, VIP or a digital platform. */
+export type PlanGroup = {
+  id: number;
+  slug: string;
+  name: string;
+  nameEn: string | null;
+  description: string | null;
+  descriptionEn: string | null;
+  logoUrl: string | null;
+  serviceType: ServiceType;
+  delivery: 'SUBSCRIPTION' | 'CODE' | 'ACCOUNT' | 'CUSTOMER_EMAIL' | string;
+  accent: string | null;
+  surface: string | null;
+  accentText: string | null;
+  builtIn: boolean;
+};
 
 export type Package = {
   id: number;
@@ -40,6 +81,10 @@ export type Package = {
   slug: string;
   serviceType: ServiceType;
   price: number;
+  /** Older servers may not send these (additive fields). */
+  renewalPrice?: number;
+  options?: PackageOption[];
+  groupId?: number | null;
   durationMonths: number;
   durationLabel: string;
   description: string;
@@ -62,7 +107,7 @@ export type VipDevice = {
   packageIds: number[];
 };
 
-export type Catalog = { packages: Package[]; devices: VipDevice[]; currency: string };
+export type Catalog = { packages: Package[]; devices: VipDevice[]; currency: string; groups?: PlanGroup[] };
 
 export type OrderStatus = 'SUBMITTED' | 'AWAITING_PAYMENT' | 'PAID' | 'FULFILLING' | 'COMPLETED' | 'CANCELLED' | 'REJECTED';
 
@@ -258,6 +303,8 @@ export type Checkout = {
   customer: { name: string; phone: string };
   plan: {
     slug: string;
+    /** The length being ordered (null = the default one). */
+    optionId?: number | null;
     name: string;
     serviceType: ServiceType;
     price: number;
@@ -273,3 +320,28 @@ export type Checkout = {
   contactOptions: ContactOption[];
   initialContact: ContactOption;
 };
+
+export type LoyaltyReward = {
+  key: string;
+  months: number;
+  cost: number;
+  worth: number;
+  redeemable: boolean;
+  problem: { code: string; messageAr: string; messageEn: string; until: string | null } | null;
+};
+
+/** «نقاط شاشتنا». While the program is off the server sends only `enabled: false`. */
+export type Loyalty =
+  | { enabled: false }
+  | {
+      enabled: true;
+      status: string;
+      balance: number;
+      available: number;
+      pending: number;
+      nextUnlockAt: string | null;
+      expiresOn: string | null;
+      progress: { target: number; current: number; messageAr: string; messageEn: string };
+      openRewardOrderId: number | null;
+      rewards: LoyaltyReward[];
+    };

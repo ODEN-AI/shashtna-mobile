@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { catalogApi, contentApi, dashboardApi, helpApi, statusApi } from '@/src/api/account';
+import { catalogApi, contentApi, dashboardApi, helpApi, loyaltyApi, statusApi } from '@/src/api/account';
 import { notificationsApi } from '@/src/api/notifications';
 import { checkoutApi, ordersApi, subscriptionsApi, type CheckoutParams, type CreateOrderInput, type ProofFile } from '@/src/api/orders';
 import { supportApi, type NewTicketInput } from '@/src/api/support';
@@ -26,13 +26,18 @@ export function useDashboard(highlightOrderId?: number | null) {
 
 export function useCheckout(params: CheckoutParams) {
   return useQuery({
-    queryKey: ['checkout', params.plan ?? null, params.renew ?? null, params.upgrade ?? null, params.device ?? null],
+    queryKey: ['checkout', params.plan ?? null, params.option ?? null, params.renew ?? null, params.upgrade ?? null, params.device ?? null],
     queryFn: () => checkoutApi.get(params),
     enabled: useSignedIn(),
     // Always resolve against current prices and availability.
     staleTime: 0,
     gcTime: 60_000,
   });
+}
+
+/** «نقاط شاشتنا» for the signed-in customer (hidden while the program is off). */
+export function useLoyalty(enabled = true) {
+  return useQuery({ queryKey: queryKeys.loyalty, queryFn: async () => (await loyaltyApi.get()).loyalty, enabled, staleTime: 60_000 });
 }
 
 export function useCatalog() {

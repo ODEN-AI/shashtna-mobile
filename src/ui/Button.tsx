@@ -4,20 +4,25 @@ import type { ComponentProps } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Text } from './Text';
-import { colors, palette, radius, space } from './theme';
+import { colors, radius, shadow, space } from './theme';
 
 /**
- * primary  solid brand blue — a screen's main action
- * light    paper white with night text — the one hero action (e.g. «جدّد»)
- * glass    quiet surface with a hairline — secondary actions (alias: secondary)
+ * Stitch buttons (all pill-shaped):
+ * primary  royal cobalt with a top highlight — a screen's main action
+ * amber    warm amber — renew / redeem (the attention action)
+ * vip      obsidian with a gold rim and gold text — VIP purchases
+ * light    pale on dark — a white call to action on banners
+ * glass    raised navy surface — secondary actions (alias: secondary)
  * ghost    text only
  * danger   destructive, calm red
  */
-type Variant = 'primary' | 'light' | 'glass' | 'secondary' | 'ghost' | 'danger' | 'glow';
+type Variant = 'primary' | 'amber' | 'vip' | 'light' | 'glass' | 'secondary' | 'ghost' | 'danger' | 'glow';
 
 const FOREGROUND: Record<Variant, string> = {
   primary: '#FFFFFF',
   glow: '#FFFFFF',
+  amber: colors.onAmber,
+  vip: colors.goldLight,
   light: colors.inkOnLight,
   glass: colors.ink,
   secondary: colors.ink,
@@ -104,26 +109,24 @@ export function GlassButton(props: Omit<ComponentProps<typeof Button>, 'variant'
   return <Button {...props} variant="glass" />;
 }
 
-const glass: ViewStyle = {
-  backgroundColor: colors.surface2,
-  borderWidth: 1,
-  borderColor: colors.lineStrong,
-};
+const glass: ViewStyle = { backgroundColor: colors.surface2 };
 
 const VARIANT_STYLE: Record<Variant, ViewStyle> = {
-  primary: { backgroundColor: colors.brand },
-  glow: { backgroundColor: colors.brand },
-  light: { backgroundColor: palette.paper },
+  primary: { backgroundColor: colors.brand, borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.2)', boxShadow: shadow.glowSoft },
+  glow: { backgroundColor: colors.brand, borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.2)', boxShadow: shadow.glow },
+  amber: { backgroundColor: colors.amber, boxShadow: shadow.amber },
+  vip: { backgroundColor: '#121316', borderWidth: 1, borderColor: colors.gold, boxShadow: shadow.gold },
+  light: { backgroundColor: '#FFFFFF' },
   glass,
   secondary: glass,
   ghost: { backgroundColor: 'transparent' },
-  danger: { backgroundColor: 'rgba(255, 122, 122, 0.12)', borderWidth: 1, borderColor: 'rgba(255, 122, 122, 0.28)' },
+  danger: { backgroundColor: 'rgba(239, 68, 68, 0.12)', borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.3)' },
 };
 
 const styles = StyleSheet.create({
   base: {
     minHeight: 52,
-    borderRadius: radius.lg,
+    borderRadius: radius.pill,
     paddingHorizontal: space.xl,
     alignItems: 'center',
     justifyContent: 'center',
