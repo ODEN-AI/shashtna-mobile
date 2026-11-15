@@ -2,14 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { View } from 'react-native';
 
-import { gradientStyle, linear } from './gradient';
-import { colors, gradients, toneBackground, toneColor, type Tone } from './theme';
+import { colors, toneBackground, toneColor, type Tone } from './theme';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
 /**
- * IconTile — a soft rounded container for an icon. `filled` uses the brand
- * gradient (quick actions, active states); otherwise a tinted glass tile.
+ * IconTile (Stitch icon tile): a rounded square tinted with the tone; `filled`
+ * is solid cobalt with a soft glow.
  */
 export function IconTile({ name, tone = 'brand', size = 44, filled }: { name: IconName; tone?: Tone; size?: number; filled?: boolean }) {
   return (
@@ -18,14 +17,12 @@ export function IconTile({ name, tone = 'brand', size = 44, filled }: { name: Ic
         {
           width: size,
           height: size,
-          borderRadius: size * 0.34,
+          borderRadius: Math.round(size * 0.3),
           alignItems: 'center',
           justifyContent: 'center',
-          borderWidth: 1,
-          borderColor: filled ? colors.glassEdge : toneBackground(tone, 0.22),
           backgroundColor: filled ? colors.brand : toneBackground(tone, 0.14),
         },
-        filled ? gradientStyle(linear(145, gradients.primary)) : null,
+        filled ? { boxShadow: '0px 0px 20px rgba(37, 99, 235, 0.35)' } : null,
       ]}
     >
       <Ionicons name={name} size={Math.round(size * 0.48)} color={filled ? '#FFFFFF' : toneColor[tone]} />

@@ -9,19 +9,18 @@ import { AmbientBackground } from '@/src/ui/AmbientBackground';
 import { BrandMark } from '@/src/ui/BrandMark';
 import { OfflineBanner } from '@/src/ui/OfflineBanner';
 import { Text } from '@/src/ui/Text';
-import { CARD_RATIO, colors, hitSlop, radius, space } from '@/src/ui/theme';
+import { colors, hitSlop, radius, rgba, space } from '@/src/ui/theme';
 
-/** Night canvas with the corner of a Shashtna card peeking in: the same world as the home card. */
+/** Stitch canvas: deep navy with two soft light pools (cobalt above, amber below). Static views, no blur. */
 const Backdrop = memo(function Backdrop() {
   const { width } = useWindowDimensions();
-  const cardWidth = Math.max(width, 360) * 0.9;
+  const size = Math.max(width, 360) * 0.9;
 
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       <AmbientBackground variant="auth" />
-      <View style={[styles.peek, { width: cardWidth, height: cardWidth / CARD_RATIO, top: -cardWidth * 0.36, end: -cardWidth * 0.3 }]}>
-        <View style={styles.peekBand} />
-      </View>
+      <View style={[styles.pool, { width: size, height: size, borderRadius: size / 2, top: -size * 0.45, start: -size * 0.35, backgroundColor: rgba(colors.brand, 0.16) }]} />
+      <View style={[styles.pool, { width: size * 0.8, height: size * 0.8, borderRadius: size * 0.4, bottom: -size * 0.35, end: -size * 0.3, backgroundColor: rgba(colors.amberDeep, 0.1) }]} />
     </View>
   );
 });
@@ -55,10 +54,13 @@ export function AuthScene({ title, subtitle, children, footer, back }: { title: 
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             <View style={styles.brand}>
               <BrandMark size={64} />
+              <Text variant="title" weight="bold">
+                شاشتنا
+              </Text>
             </View>
             <View style={styles.card}>
               <View style={{ gap: space.xs, marginBottom: space.sm }}>
-                <Text variant="title" center accessibilityRole="header">
+                <Text variant="title" weight="bold" center accessibilityRole="header">
                   {title}
                 </Text>
                 {subtitle ? (
@@ -79,16 +81,7 @@ export function AuthScene({ title, subtitle, children, footer, back }: { title: 
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.canvas, overflow: 'hidden' },
-  peek: {
-    position: 'absolute',
-    borderRadius: radius.xxl,
-    backgroundColor: colors.brand,
-    opacity: 0.9,
-    overflow: 'hidden',
-    justifyContent: 'flex-end',
-    transform: [{ rotate: '-12deg' }],
-  },
-  peekBand: { height: 44, backgroundColor: colors.silver },
+  pool: { position: 'absolute' },
   topBar: { flexDirection: 'row', paddingHorizontal: space.lg, paddingTop: space.sm },
   close: {
     width: 44,
@@ -101,15 +94,14 @@ const styles = StyleSheet.create({
     borderColor: colors.glassBorder,
   },
   scroll: { flexGrow: 1, justifyContent: 'center', padding: space.xl, paddingTop: space.sm, gap: space.lg },
-  brand: { alignItems: 'center' },
+  brand: { alignItems: 'center', gap: space.sm },
   card: {
     gap: space.lg,
     padding: space.xl,
     paddingVertical: space.xxl,
     borderRadius: radius.xl,
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.line,
+    boxShadow: '0px 20px 40px rgba(0, 0, 0, 0.5)',
     maxWidth: 460,
     width: '100%',
     alignSelf: 'center',

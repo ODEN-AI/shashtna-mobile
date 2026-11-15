@@ -91,7 +91,7 @@ export default function LoginScreen() {
         </Text>
       </Link>
 
-      <Button title="دخول" variant="light" onPress={submit} loading={busy} testID="login-submit" />
+      <Button title="دخول" onPress={submit} loading={busy} testID="login-submit" />
     </AuthScene>
   );
 }

@@ -3,12 +3,12 @@ import { StyleSheet, View } from 'react-native';
 import { Text } from './Text';
 import { radius, toneBackground, toneColor, type Tone } from './theme';
 
-/** StatusBadge — a small tinted pill; the dot marks live states. */
+/** Stitch status chip: a tinted pill (12% tone), no stroke; the dot marks live states. */
 export function StatusBadge({ label, tone = 'neutral', dot }: { label: string; tone?: Tone; dot?: boolean }) {
   return (
-    <View style={[styles.badge, { backgroundColor: toneBackground(tone, 0.16), borderColor: toneBackground(tone, 0.3) }]}>
+    <View style={[styles.badge, { backgroundColor: toneBackground(tone, 0.12) }]}>
       {dot ? <View style={[styles.dot, { backgroundColor: toneColor[tone] }]} /> : null}
-      <Text variant="caption" weight="bold" color={toneColor[tone]} numberOfLines={1}>
+      <Text variant="micro" color={toneColor[tone]} numberOfLines={1} style={{ fontSize: 12, lineHeight: 16 }}>
         {label}
       </Text>
     </View>
@@ -26,7 +26,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: radius.pill,
-    borderWidth: 1,
   },
   dot: { width: 7, height: 7, borderRadius: 4 },
 });

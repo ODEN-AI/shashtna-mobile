@@ -8,7 +8,7 @@ import { formatDateTime } from '@/src/lib/format';
 import { notificationType } from '@/src/lib/status';
 import { useMarkRead, useNotifications } from '@/src/query/hooks';
 import { Button } from '@/src/ui/Button';
-import { Card } from '@/src/ui/Card';
+import { Panel, Pill } from '@/src/ui/Kit';
 import { IconWell } from '@/src/ui/IconWell';
 import { Screen } from '@/src/ui/Screen';
 import { EmptyState, LoadingState } from '@/src/ui/States';
@@ -36,22 +36,25 @@ export default function NotificationDetailScreen() {
 
   return (
     <Screen>
-      <Card style={{ gap: space.md }}>
+      <Panel style={{ gap: space.lg }}>
         <View style={{ flexDirection: 'row', gap: space.md, alignItems: 'center' }}>
-          <IconWell name={meta.icon as never} tone={meta.tone} />
-          <View style={{ flex: 1 }}>
-            <Text variant="caption" color={colors.ink3}>
-              {meta.label} · {formatDateTime(item.createdAt)}
+          <IconWell name={meta.icon as never} tone={meta.tone} size={48} />
+          <View style={{ flex: 1, gap: 4 }}>
+            <Pill label={meta.label} color={colors.brandInk} background={colors.surface2} />
+            <Text variant="micro" color={colors.ink3}>
+              {formatDateTime(item.createdAt)}
             </Text>
-            <Text variant="heading">{item.title}</Text>
           </View>
         </View>
+        <Text variant="title" weight="bold">
+          {item.title}
+        </Text>
         {item.imageUrl ? <Image source={item.imageUrl} style={{ width: '100%', aspectRatio: 16 / 9, borderRadius: radius.md }} contentFit="cover" /> : null}
-        <Text color={colors.ink2} selectable>
+        <Text variant="body" color={colors.ink2} selectable style={{ fontSize: 16, lineHeight: 26 }}>
           {item.body}
         </Text>
-      </Card>
-      {item.destination ? <Button title="افتح" onPress={() => router.push(destinationHref(item.destination!) as never)} /> : null}
+      </Panel>
+      {item.destination ? <Button title="افتح" iconEnd="arrow-back" onPress={() => router.push(destinationHref(item.destination!) as never)} /> : null}
     </Screen>
   );
 }

@@ -47,7 +47,7 @@ export function OrderProgress({ stage }: { stage: OrderStage }) {
         {ORDER_STEPS.map((step, index) => (
           <View key={step.stage} style={styles.segment}>
             <View style={[styles.node, index < current && styles.nodeDone, index === current && styles.nodeCurrent]}>
-              {index < current || (index === current && stage === 'ACTIVATED') ? <Ionicons name="checkmark" size={10} color="#FFFFFF" /> : null}
+              {index < current || (index === current && stage === 'ACTIVATED') ? <Ionicons name="checkmark" size={10} color="#002A78" /> : null}
             </View>
             {index < ORDER_STEPS.length - 1 ? <View style={[styles.line, index < current && styles.lineDone]} /> : null}
           </View>
@@ -107,7 +107,9 @@ export const OrderCard = memo(function OrderCard({ order }: { order: Order }) {
             {order.requestTypeLabel} · {order.durationLabel}
           </Text>
         </View>
-        <Text variant="heading">{formatPrice(order.price)}</Text>
+        <Text variant="heading" weight="bold" color={colors.amber} style={{ fontVariant: ['tabular-nums'] }}>
+          {formatPrice(order.price)}
+        </Text>
       </View>
 
       <Badge label={meta.label} tone={meta.tone} dot={order.isOpen} />
@@ -133,14 +135,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.glass,
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
+    backgroundColor: colors.surface3,
   },
-  nodeDone: { backgroundColor: colors.active, borderColor: colors.active },
-  nodeCurrent: { backgroundColor: colors.brand, borderColor: colors.ice, borderWidth: 2, boxShadow: '0px 0px 10px rgba(55, 129, 252, 0.8)' },
-  line: { flex: 1, height: 2, marginHorizontal: 2, backgroundColor: colors.lineStrong, borderRadius: 1 },
-  lineDone: { backgroundColor: colors.active },
+  nodeDone: { backgroundColor: colors.brandInk },
+  nodeCurrent: { backgroundColor: colors.amber, boxShadow: '0px 0px 10px rgba(255, 185, 95, 0.5)' },
+  line: { flex: 1, height: 2, marginHorizontal: 2, backgroundColor: colors.surface3, borderRadius: 1 },
+  lineDone: { backgroundColor: 'rgba(180, 197, 255, 0.5)' },
   labels: { flexDirection: 'row', marginTop: 6 },
   label: { flex: 1, fontSize: 10.5, lineHeight: 14 },
   ended: { flexDirection: 'row', alignItems: 'center', gap: space.sm },

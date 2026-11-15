@@ -61,7 +61,7 @@ export default function ForgotPasswordScreen() {
           <Field variant="pill" icon="call-outline" label="رقم الهاتف" value={phone} onChangeText={setPhone} keyboardType="phone-pad" ltr placeholder="07XXXXXXXXX" />
           <Button
             title="أرسل الطلب"
-            variant="light"
+           
             loading={busy}
             onPress={() =>
               run(async () => {
@@ -84,7 +84,7 @@ export default function ForgotPasswordScreen() {
           <Field variant="pill" icon="lock-closed-outline" label="كلمة المرور الجديدة" value={password} onChangeText={setPassword} password hint="6 أحرف على الأقل" />
           <Button
             title="تغيير كلمة المرور"
-            variant="light"
+           
             loading={busy}
             onPress={() =>
               run(async () => {

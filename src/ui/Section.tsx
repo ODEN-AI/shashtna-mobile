@@ -14,7 +14,7 @@ export function SectionHeader({ title, eyebrow, action, onAction }: { title: str
             {eyebrow}
           </Text>
         ) : null}
-        <Text variant="heading" accessibilityRole="header">
+        <Text variant="heading" weight="bold" accessibilityRole="header">
           {title}
         </Text>
       </View>
@@ -53,5 +53,5 @@ export function Section({
 const styles = StyleSheet.create({
   section: { gap: space.md },
   header: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: space.md },
-  action: { minHeight: 32, justifyContent: 'center' },
+  action: { minHeight: 44, justifyContent: 'center' },
 });

@@ -1,40 +1,51 @@
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Text } from './Text';
-import { useToast } from './Toast';
-import { colors, radius, space } from './theme';
+import { colors, radius, rgba, space } from './theme';
 
-/** A value the customer needs to copy (transfer number, username...). */
+/**
+ * Stitch "copyable credential tile": the label in small muted blue, the value
+ * large in Latin digits (left to right), and a «نسخ» pill that turns into
+ * «تم النسخ» for a moment. Secrets stay masked until revealed by the caller.
+ */
 export function CopyField({ label, value, secret, revealed }: { label: string; value: string; secret?: boolean; revealed?: boolean }) {
-  const toast = useToast();
-  const shown = secret && !revealed ? '•'.repeat(Math.min(12, Math.max(6, value.length))) : value;
+  const [copied, setCopied] = useState(false);
+  const hidden = secret && !revealed;
+  const shown = hidden ? '•'.repeat(Math.min(12, Math.max(6, value.length))) : value;
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 1600);
+    return () => clearTimeout(timer);
+  }, [copied]);
 
   return (
     <View style={styles.box}>
-      <View style={{ flex: 1, gap: 2 }}>
-        <Text variant="caption" color={colors.ink3}>
+      <View style={styles.body}>
+        <Text variant="caption" color={colors.brandInk}>
           {label}
         </Text>
-        <Text variant="mono" selectable={!secret || revealed}>
+        <Text variant="mono" selectable={!hidden} numberOfLines={2} style={styles.value}>
           {shown}
         </Text>
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`نسخ ${label}`}
+        accessibilityLabel={copied ? 'تم النسخ' : `نسخ ${label}`}
         onPress={async () => {
           await Clipboard.setStringAsync(value);
           void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
-          toast('تم النسخ');
+          setCopied(true);
         }}
-        style={({ pressed }) => [styles.copy, pressed && { opacity: 0.7 }]}
+        style={({ pressed }) => [styles.copy, copied && styles.copied, pressed && { opacity: 0.8 }]}
       >
-        <Ionicons name="copy-outline" size={18} color={colors.brandInk} />
-        <Text variant="label" color={colors.brandInk}>
-          نسخ
+        <MaterialIcons name={copied ? 'check' : 'content-copy'} size={16} color={copied ? colors.success : colors.brandInk} />
+        <Text variant="label" color={copied ? colors.success : colors.brandInk}>
+          {copied ? 'تم النسخ' : 'نسخ'}
         </Text>
       </Pressable>
     </View>
@@ -47,19 +58,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space.md,
     padding: space.md,
+    paddingStart: space.lg,
     borderRadius: radius.md,
-    backgroundColor: 'rgba(1, 6, 25, 0.3)',
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
+    backgroundColor: colors.surface2,
   },
+  body: { flex: 1, gap: 2 },
+  value: { textAlign: 'left' },
   copy: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: space.md,
-    paddingVertical: space.sm,
+    minHeight: 44,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(25, 81, 252, 0.18)',
-    minHeight: 40,
+    backgroundColor: rgba(colors.brand, 0.18),
   },
+  copied: { backgroundColor: rgba(colors.success, 0.15) },
 });

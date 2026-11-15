@@ -20,9 +20,9 @@ export function Journey({ steps }: { steps: JourneyStep[] }) {
               <View style={[styles.line, index === 0 && styles.hidden, (done || current) && styles.lineDone]} />
               <View style={[styles.circle, done && styles.circleDone, current && styles.circleCurrent]}>
                 {done ? (
-                  <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                  <Ionicons name="checkmark" size={14} color="#002A78" />
                 ) : (
-                  <Text variant="caption" weight="bold" color={current ? colors.ink : colors.ink3}>
+                  <Text variant="caption" weight="bold" color={current ? colors.onAmber : colors.ink3}>
                     {index + 1}
                   </Text>
                 )}
@@ -43,8 +43,8 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row' },
   step: { flex: 1, gap: space.sm, alignItems: 'center' },
   track: { flexDirection: 'row', alignItems: 'center', alignSelf: 'stretch' },
-  line: { flex: 1, height: 2, backgroundColor: colors.line },
-  lineDone: { backgroundColor: colors.active },
+  line: { flex: 1, height: 2, backgroundColor: colors.surface3 },
+  lineDone: { backgroundColor: 'rgba(180, 197, 255, 0.5)' },
   hidden: { opacity: 0 },
   circle: {
     width: 28,
@@ -52,10 +52,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.glass,
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
+    backgroundColor: colors.surface2,
   },
-  circleDone: { backgroundColor: colors.active, borderColor: colors.glassEdge },
-  circleCurrent: { borderColor: colors.active, borderWidth: 2, backgroundColor: 'rgba(25, 81, 252, 0.3)', boxShadow: '0px 0px 12px rgba(55, 129, 252, 0.7)' },
+  circleDone: { backgroundColor: colors.brandInk },
+  circleCurrent: { backgroundColor: colors.amber, boxShadow: '0px 0px 12px rgba(255, 185, 95, 0.45)' },
 });

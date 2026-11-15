@@ -22,7 +22,7 @@ export default function StatusScreen() {
       <QueryBoundary query={query}>
         {(data) => (
           <>
-            <Card style={styles.overall} glow={data.overall === 'OPERATIONAL'}>
+            <Card style={styles.overall}>
               <Ionicons
                 name={data.overall === 'OPERATIONAL' ? 'checkmark-circle' : data.overall === 'OUTAGE' ? 'close-circle' : 'warning'}
                 size={40}

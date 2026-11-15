@@ -36,7 +36,9 @@ export default function ContentScreen() {
                 <Badge label={item.kind === 'OFFER' ? 'عرض' : 'خبر'} tone={item.kind === 'OFFER' ? 'glow' : 'info'} />
                 {item.endsAt ? <Badge label={`لغاية ${formatDate(item.endsAt)}`} tone="warning" /> : null}
               </View>
-              <Text variant="title">{item.title}</Text>
+              <Text variant="title" weight="bold">
+                {item.title}
+              </Text>
               {item.description ? (
                 <Text color={colors.ink2} selectable>
                   {item.description}

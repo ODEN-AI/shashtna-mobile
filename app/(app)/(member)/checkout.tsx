@@ -9,7 +9,7 @@ import { formatPrice } from '@/src/lib/format';
 import { useCatalog, useCheckout, useCreateOrder } from '@/src/query/hooks';
 import { Badge } from '@/src/ui/Badge';
 import { Button } from '@/src/ui/Button';
-import { Card } from '@/src/ui/Card';
+import { Panel } from '@/src/ui/Kit';
 import { Field } from '@/src/ui/Field';
 import type { IconName } from '@/src/ui/IconWell';
 import { Screen } from '@/src/ui/Screen';
@@ -189,7 +189,7 @@ function CheckoutBody({ data }: { data: Checkout }) {
                     accessibilityState={{ checked: selected }}
                     style={[styles.option, selected && styles.optionSelected]}
                   >
-                    <Ionicons name={selected ? 'checkmark-circle' : 'hardware-chip-outline'} size={22} color={selected ? colors.glow : colors.ink3} />
+                    <Ionicons name={selected ? 'checkmark-circle' : 'hardware-chip-outline'} size={22} color={selected ? colors.gold : colors.ink3} />
                     <View style={{ flex: 1 }}>
                       <Text variant="label">{item.name}</Text>
                       <Text variant="caption" color={colors.ink3} numberOfLines={2}>
@@ -237,7 +237,7 @@ function CheckoutBody({ data }: { data: Checkout }) {
                   {CONTACT[option].hint}
                 </Text>
               </View>
-              {selected ? <Ionicons name="checkmark" size={20} color={colors.glow} /> : null}
+              {selected ? <Ionicons name="checkmark-circle" size={22} color={colors.sky} /> : null}
             </Pressable>
           );
         })}
@@ -247,8 +247,10 @@ function CheckoutBody({ data }: { data: Checkout }) {
         <Field label="ملاحظة (اختياري)" value={note} onChangeText={setNote} maxLength={500} multiline placeholder="مثلًا: أفضل وقت للتواصل" />
       </Section>
 
-      <Card style={{ gap: space.md }} glow>
-        <Text variant="heading">ملخص الطلب</Text>
+      <Panel style={styles.summary} testID="checkout-summary">
+        <Text variant="heading" weight="bold">
+          ملخص الطلب
+        </Text>
         {data.plan ? (
           <Row label={data.mode === 'RENEW' ? 'تجديد' : data.mode === 'UPGRADE' ? 'ترقية إلى' : 'الباقة'} value={`${data.plan.name} · ${data.plan.durationLabel}`} />
         ) : null}
@@ -260,24 +262,26 @@ function CheckoutBody({ data }: { data: Checkout }) {
         <Row label="الإجمالي" value={ready ? formatPrice(total) : '—'} strong />
         <Notice tone="info">بعد تأكيد الطلب، ستنتقل إلى حسابك لإكمال الدفع وإرسال إثبات الدفع.</Notice>
         {createOrder.isError ? <Notice tone="danger">{errorMessage(createOrder.error)}</Notice> : null}
-      </Card>
+      </Panel>
     </Screen>
   );
 }
 
 function Section({ index, title, children }: { index: number; title: string; children: ReactNode }) {
   return (
-    <Card style={{ gap: space.md }}>
+    <Panel style={{ gap: space.md }}>
       <View style={styles.sectionHead}>
         <View style={styles.index}>
-          <Text variant="caption" weight="bold">
+          <Text variant="label" weight="bold" color={colors.onBrand}>
             {index}
           </Text>
         </View>
-        <Text variant="heading">{title}</Text>
+        <Text variant="heading" weight="bold">
+          {title}
+        </Text>
       </View>
       {children}
-    </Card>
+    </Panel>
   );
 }
 
@@ -285,7 +289,7 @@ function Row({ label, value, strong, ltr }: { label: string; value: string; stro
   return (
     <View style={styles.row}>
       <Text color={colors.ink3}>{label}</Text>
-      <Text variant={strong ? 'heading' : 'label'} style={[{ flexShrink: 1 }, ltr && { writingDirection: 'ltr' }]}>
+      <Text variant={strong ? 'title' : 'label'} weight={strong ? 'bold' : undefined} color={strong ? colors.amber : colors.ink} style={[{ flexShrink: 1 }, strong && { fontVariant: ['tabular-nums'] }, ltr && { writingDirection: 'ltr' }]}>
         {value}
       </Text>
     </View>
@@ -297,15 +301,7 @@ const styles = StyleSheet.create({
   badges: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   feature: { flexDirection: 'row', alignItems: 'flex-start', gap: space.sm },
   sectionHead: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  index: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
-  },
+  index: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.brand },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -313,12 +309,14 @@ const styles = StyleSheet.create({
     padding: space.md,
     minHeight: 56,
     borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.lineStrong,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
     backgroundColor: colors.surface2,
   },
-  optionSelected: { borderColor: 'rgba(34, 211, 238, 0.7)', backgroundColor: 'rgba(34, 211, 238, 0.06)' },
-  contactSelected: { borderColor: colors.brand, backgroundColor: 'rgba(47,107,255,0.1)' },
-  contactIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.surface3, alignItems: 'center', justifyContent: 'center' },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.line },
+  // Stitch selectors: gold rim for VIP devices, electric blue for everything else.
+  optionSelected: { borderColor: colors.gold, backgroundColor: 'rgba(245, 158, 11, 0.08)', boxShadow: '0px 0px 16px rgba(245, 158, 11, 0.2)' },
+  contactSelected: { borderColor: colors.sky, backgroundColor: 'rgba(123, 208, 255, 0.08)', boxShadow: '0px 0px 16px rgba(123, 208, 255, 0.18)' },
+  contactIcon: { width: 40, height: 40, borderRadius: radius.md, backgroundColor: colors.surface3, alignItems: 'center', justifyContent: 'center' },
+  summary: { gap: space.md, backgroundColor: colors.surface2, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.08)' },
+  divider: { height: 1, backgroundColor: colors.surface3 },
 });

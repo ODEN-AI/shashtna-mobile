@@ -39,11 +39,23 @@ function NotificationCentre() {
   const query = useNotifications();
   const markRead = useMarkRead();
   const inset = useTabBarInset();
-  const [filter, setFilter] = useState<'ALL' | 'UNREAD'>('ALL');
+  const [filter, setFilter] = useState<'ALL' | 'UNREAD' | 'OFFERS' | 'ORDERS'>('ALL');
   const items = useMemo(() => query.data?.pages.flatMap((page) => page.notifications) ?? [], [query.data]);
   const unread = query.data?.pages[0]?.unread ?? 0;
 
-  const visible = useMemo(() => (filter === 'UNREAD' ? items.filter((item) => !item.readAt) : items), [items, filter]);
+  const visible = useMemo(
+    () =>
+      items.filter((item) =>
+        filter === 'UNREAD'
+          ? !item.readAt
+          : filter === 'OFFERS'
+            ? item.type === 'OFFER' || item.type === 'ANNOUNCEMENT'
+            : filter === 'ORDERS'
+              ? ['ORDER_STATUS', 'PAYMENT_UPDATE', 'SUBSCRIPTION_ACTIVATED', 'SUBSCRIPTION_RENEWED'].includes(item.type)
+              : true,
+      ),
+    [items, filter],
+  );
   // The newest unread item is featured; everything else is a compact card.
   const featured = visible.find((item) => !item.readAt) ?? null;
   const rest = useMemo(() => (featured ? visible.filter((item) => item.id !== featured.id) : visible), [visible, featured]);
@@ -67,13 +79,18 @@ function NotificationCentre() {
         ListHeaderComponent={
           <View style={{ gap: space.lg, marginBottom: space.sm }}>
             <View style={styles.header}>
-              <View style={{ flex: 1 }}>
-                <Text variant="title" accessibilityRole="header">
-                  الإشعارات
-                </Text>
-                <Text variant="caption" color={colors.ink3}>
-                  {unread ? `${unread} غير مقروء` : 'كل شي مقروء'}
-                </Text>
+              <View style={{ flex: 1, gap: 4 }}>
+                <View style={styles.titleRow}>
+                  <View style={styles.liveDot} />
+                  <Text variant="title" weight="bold" accessibilityRole="header">
+                    مركز الإشعارات والعروض
+                  </Text>
+                </View>
+                <View style={styles.counter}>
+                  <Text variant="micro" color={unread ? colors.amber : colors.ink2}>
+                    {unread ? `${unread} غير مقروءة` : 'كل شي مقروء'}
+                  </Text>
+                </View>
               </View>
               {unread ? (
                 <Pressable onPress={() => markRead.mutate('all')} hitSlop={hitSlop} accessibilityRole="button" style={styles.markAll} testID="mark-all-read">
@@ -88,6 +105,8 @@ function NotificationCentre() {
                 items={[
                   { value: 'ALL', label: 'الكل' },
                   { value: 'UNREAD', label: 'غير مقروءة', count: unread || undefined },
+                  { value: 'OFFERS', label: 'العروض والإعلانات' },
+                  { value: 'ORDERS', label: 'طلباتي واشتراكي' },
                 ]}
                 value={filter}
                 onChange={setFilter}
@@ -110,8 +129,8 @@ function NotificationCentre() {
             <LoadingState />
           ) : query.isError ? (
             <ErrorState error={query.error} onRetry={() => void query.refetch()} />
-          ) : filter === 'UNREAD' ? (
-            <EmptyState icon="checkmark-done-outline" tone="success" title="ماكو إشعارات غير مقروءة" />
+          ) : filter !== 'ALL' ? (
+            <EmptyState icon="checkmark-done-outline" tone="success" title={filter === 'UNREAD' ? 'ماكو إشعارات غير مقروءة' : 'ماكو شي هنا بعد'} />
           ) : (
             <EmptyState icon="notifications-outline" title="ماكو إشعارات" body="هنا توصلك تحديثات طلباتك واشتراكك والعروض." />
           )
@@ -123,13 +142,8 @@ function NotificationCentre() {
 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  markAll: {
-    paddingHorizontal: space.md,
-    minHeight: 40,
-    justifyContent: 'center',
-    borderRadius: radius.pill,
-    backgroundColor: colors.glass,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-  },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  liveDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.amber },
+  counter: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 2, borderRadius: radius.pill, backgroundColor: colors.surface2 },
+  markAll: { paddingHorizontal: space.md, minHeight: 44, justifyContent: 'center', borderRadius: radius.pill, backgroundColor: colors.surface2 },
 });

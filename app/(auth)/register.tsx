@@ -126,7 +126,7 @@ export default function RegisterScreen() {
         </Text>
       </Pressable>
 
-      <Button title="إنشاء الحساب" variant="light" onPress={submit} loading={busy} testID="register-submit" />
+      <Button title="إنشاء الحساب" onPress={submit} loading={busy} testID="register-submit" />
     </AuthScene>
   );
 }

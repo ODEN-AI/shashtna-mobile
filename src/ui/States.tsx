@@ -101,11 +101,11 @@ export function Notice({ tone = 'info', icon, children }: { tone?: Tone; icon?: 
   const color = tone === 'neutral' ? colors.ink2 : toneColor[tone];
 
   return (
-    <View style={[styles.notice, { borderColor: toneBackground(tone, 0.35), backgroundColor: toneBackground(tone, 0.1) }]} accessibilityRole="alert">
+    <View style={[styles.notice, { backgroundColor: toneBackground(tone, 0.1) }]} accessibilityRole="alert">
       <Ionicons name={icon ?? (tone === 'danger' ? 'alert-circle' : tone === 'success' ? 'checkmark-circle' : 'information-circle')} size={20} color={color} />
       <View style={{ flex: 1 }}>
         {typeof children === 'string' ? (
-          <Text variant="label" color={color}>
+          <Text variant="body" color={colors.ink}>
             {children}
           </Text>
         ) : (
@@ -125,8 +125,6 @@ const styles = StyleSheet.create({
     padding: space.lg,
     borderRadius: radius.lg,
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.line,
   },
   notice: {
     flexDirection: 'row',
@@ -134,6 +132,5 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     padding: space.md,
     borderRadius: radius.md,
-    borderWidth: 1,
   },
 });

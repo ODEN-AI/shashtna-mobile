@@ -263,6 +263,31 @@ describe('settings and account', () => {
   });
 });
 
+describe('subscription details', () => {
+  it('keeps the password masked until the customer reveals it', async () => {
+    const subscription = makeSubscription({ credentials: { username: 'user77', password: 'pa55word', macAddress: null, deviceId: null } });
+    const { screen } = await startApp({ url: `/subscriptions/${subscription.id}`, signedIn: true, backend: { subscriptions: [subscription] } });
+
+    await screen.findByText('بيانات التشغيل');
+    screen.getByText('user77');
+    expect(screen.queryByText('pa55word')).toBeNull();
+
+    fireEvent.press(screen.getByTestId('reveal-credentials'));
+    await screen.findByText('pa55word');
+  });
+});
+
+describe('payment', () => {
+  it('shows the amount, the transfer number to copy and the receipt drop zone', async () => {
+    const { screen } = await startApp({ url: '/orders/12', signedIn: true, backend: { order: makeOrder() } });
+
+    const card = await screen.findByTestId('payment-card');
+    within(card).getByText('9286253712');
+    within(card).getByText('ارفع صورة وصل التحويل أو لقطة الشاشة');
+    expect(within(card).getByTestId('upload-proof').props.accessibilityState).toMatchObject({ disabled: true });
+  });
+});
+
 describe('bottom navigation', () => {
   it('has the five Stitch tabs with «اشتراكي» raised in the middle', async () => {
     const { screen } = await startApp({ signedIn: true });

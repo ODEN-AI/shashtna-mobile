@@ -78,11 +78,13 @@ function Thread({ ticket, onClose }: { ticket: Ticket; onClose: () => void }) {
 
         return (
           <View key={message.id} style={[styles.bubble, mine ? styles.mine : styles.theirs]}>
-            <Text variant="caption" color={mine ? colors.brandInk : colors.glow} weight="bold">
+            <Text variant="caption" color={mine ? '#FFFFFF' : colors.sky} weight="bold">
               {mine ? 'أنت' : message.senderName ?? 'دعم شاشتنا'}
             </Text>
-            <Text selectable>{message.message}</Text>
-            <Text variant="caption" color={colors.ink3}>
+            <Text selectable color={mine ? '#FFFFFF' : colors.ink}>
+              {message.message}
+            </Text>
+            <Text variant="caption" color={mine ? 'rgba(255, 255, 255, 0.8)' : colors.ink3}>
               {formatDateTime(message.createdAt)}
             </Text>
           </View>
@@ -94,6 +96,6 @@ function Thread({ ticket, onClose }: { ticket: Ticket; onClose: () => void }) {
 
 const styles = StyleSheet.create({
   bubble: { maxWidth: '88%', padding: space.md, borderRadius: radius.lg, gap: 4 },
-  mine: { alignSelf: 'flex-start', backgroundColor: 'rgba(47,107,255,0.16)', borderBottomStartRadius: 4 },
-  theirs: { alignSelf: 'flex-end', backgroundColor: colors.surface2, borderBottomEndRadius: 4 },
+  mine: { alignSelf: 'flex-start', backgroundColor: colors.brand, borderBottomStartRadius: 4 },
+  theirs: { alignSelf: 'flex-end', backgroundColor: colors.surface, borderBottomEndRadius: 4 },
 });

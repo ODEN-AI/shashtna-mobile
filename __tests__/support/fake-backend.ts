@@ -212,6 +212,14 @@ export function createBackend(initial: Partial<BackendState> = {}) {
 
     if (path === '/api/mobile/subscriptions') return json(200, { success: true, subscriptions: state.subscriptions });
 
+    const subscriptionMatch = path.match(/^\/api\/mobile\/subscriptions\/(\d+)$/);
+    if (subscriptionMatch) {
+      const subscription = state.subscriptions.find((item) => item.id === Number(subscriptionMatch[1]));
+      return subscription
+        ? json(200, { success: true, subscription, orders: [], receipts: [], events: [] })
+        : json(404, { success: false, message: 'الاشتراك غير موجود.' });
+    }
+
     const orderMatch = path.match(/^\/api\/mobile\/orders\/(\d+)$/);
     if (orderMatch) return state.order ? json(200, { success: true, order: state.order }) : json(404, { success: false, message: 'الطلب غير موجود.' });
 

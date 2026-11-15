@@ -8,7 +8,7 @@ type Variant = 'display' | 'hero' | 'title' | 'heading' | 'body' | 'label' | 'ca
 const VARIANTS: Record<Variant, TextStyle> = {
   display: { fontSize: 36, fontWeight: '700', lineHeight: 44 }, // headline-xl
   hero: { fontSize: 28, fontWeight: '700', lineHeight: 36 }, // headline-xl-mobile
-  title: { fontSize: 22, fontWeight: '600', lineHeight: 30 }, // headline-lg-mobile
+  title: { fontSize: 22, fontWeight: '700', lineHeight: 30 }, // headline-lg-mobile (the comps set it bold)
   heading: { fontSize: 18, fontWeight: '600', lineHeight: 26 }, // title-lg
   body: { fontSize: 14, fontWeight: '400', lineHeight: 22 }, // body-md
   label: { fontSize: 14, fontWeight: '600', lineHeight: 20 }, // label-lg

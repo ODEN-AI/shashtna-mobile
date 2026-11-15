@@ -3,7 +3,7 @@ import { forwardRef, useState, type ComponentProps } from 'react';
 import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 
 import { Text } from './Text';
-import { colors, font, hitSlop, radius, space } from './theme';
+import { colors, fontFamily, hitSlop, radius, space } from './theme';
 
 type Props = TextInputProps & {
   label: string;
@@ -76,19 +76,19 @@ const styles = StyleSheet.create({
     gap: space.sm,
     minHeight: 54,
     paddingHorizontal: space.lg,
-    borderRadius: radius.md,
+    borderRadius: radius.sm,
     borderWidth: 1,
-    borderColor: colors.lineStrong,
-    backgroundColor: colors.surface2,
+    borderColor: colors.surface3,
+    backgroundColor: colors.canvasDeep,
   },
-  pill: { borderRadius: radius.pill, backgroundColor: colors.surface2, borderColor: colors.lineStrong, paddingHorizontal: space.xl },
-  focused: { borderColor: colors.active, backgroundColor: 'rgba(25, 81, 252, 0.12)' },
+  pill: { borderRadius: radius.pill, backgroundColor: colors.canvasDeep, borderColor: colors.surface3, paddingHorizontal: space.xl },
+  focused: { borderColor: colors.brand, backgroundColor: 'rgba(37, 99, 235, 0.08)' },
   invalid: { borderColor: colors.danger },
   input: {
     flex: 1,
     color: colors.ink,
-    fontSize: font.size.md,
-    fontFamily: font.family,
+    fontSize: 16,
+    fontFamily: fontFamily.regular,
     paddingVertical: space.md,
   },
   // Phone numbers and codes are typed left-to-right; alignment still follows
