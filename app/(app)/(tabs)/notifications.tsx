@@ -112,6 +112,14 @@ function NotificationCentre() {
                 onChange={setFilter}
               />
             ) : null}
+            <Pressable onPress={() => router.push('/offers')} accessibilityRole="button" style={styles.offersLink} testID="open-offers">
+              <Text variant="label" weight="semibold" color={colors.amber}>
+                عروض وأخبار شاشتنا
+              </Text>
+              <Text variant="micro" color={colors.ink2}>
+                كل العروض والأخبار الحالية ←
+              </Text>
+            </Pressable>
             {featured ? <FeaturedNotification item={featured} onPress={() => open(featured)} /> : null}
           </View>
         }
@@ -145,5 +153,6 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   liveDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.amber },
   counter: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 2, borderRadius: radius.pill, backgroundColor: colors.surface2 },
+  offersLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 52, paddingHorizontal: space.lg, borderRadius: radius.xl, backgroundColor: colors.surface },
   markAll: { paddingHorizontal: space.md, minHeight: 44, justifyContent: 'center', borderRadius: radius.pill, backgroundColor: colors.surface2 },
 });

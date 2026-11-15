@@ -5,12 +5,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Catalog } from '@/src/api/types';
 import { useAuth } from '@/src/auth/AuthProvider';
-import { ContactCard, NoSubscription, OfferHighlight, OrderMini, PointsBar, QuickServices, SubscriptionAlert } from '@/src/features/home/HomeSections';
+import { ContactCard, ContentHighlights, NoSubscription, OrderMini, PointsBar, QuickServices, SubscriptionAlert } from '@/src/features/home/HomeSections';
 import { IncidentBanner } from '@/src/features/IncidentBanner';
 import { PushPrompt } from '@/src/features/PushPrompt';
 import { optionsOf, priceOf } from '@/src/lib/catalog';
 import { firstName, formatPrice } from '@/src/lib/format';
-import { useCatalog, useDashboard, useHelp, useLoyalty, useServiceStatus } from '@/src/query/hooks';
+import { useCatalog, useContent, useDashboard, useHelp, useLoyalty, useServiceStatus } from '@/src/query/hooks';
 import { BrandMark } from '@/src/ui/BrandMark';
 import { Button } from '@/src/ui/Button';
 import { Heading, Panel, Pill, Tile, type MIcon } from '@/src/ui/Kit';
@@ -69,12 +69,14 @@ function CustomerHome() {
   const catalog = useCatalog();
   const help = useHelp();
   const loyalty = useLoyalty();
+  const content = useContent();
   const justCreated = Boolean(highlight) && params.created === '1' && query.data?.currentOrder?.id === highlight;
 
   const refresh = () => {
     void query.refetch();
     void loyalty.refetch();
     void catalog.refetch();
+    void content.refetch();
   };
 
   return (
@@ -117,7 +119,7 @@ function CustomerHome() {
 
               <QuickServices catalog={catalog.data} />
 
-              <OfferHighlight offers={data.offers} />
+              <ContentHighlights content={content.data} />
 
               <PushPrompt />
 
@@ -143,6 +145,7 @@ function GuestHome() {
   const insets = useSafeAreaInsets();
   const status = useServiceStatus();
   const catalog = useCatalog();
+  const content = useContent();
 
   return (
     <Screen
@@ -153,6 +156,7 @@ function GuestHome() {
       onRefresh={() => {
         void catalog.refetch();
         void status.refetch();
+        void content.refetch();
       }}
     >
       <TopBar guest />
@@ -187,6 +191,8 @@ function GuestHome() {
       </View>
 
       <GuestPackages catalog={catalog.data} />
+
+      <ContentHighlights content={content.data} />
 
       <Button title="تصفح الباقات واشترك هسه" icon="rocket" onPress={() => router.navigate('/packages')} testID="guest-store" />
       <View style={styles.links}>

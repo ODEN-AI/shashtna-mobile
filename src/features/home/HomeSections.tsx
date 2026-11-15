@@ -1,9 +1,9 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
-import type { Catalog, ContentItem, Help, Loyalty, OrderDetail, OrderStage, Subscription } from '@/src/api/types';
+import type { Catalog, Content, Help, Loyalty, OrderDetail, OrderStage, Subscription } from '@/src/api/types';
+import { ContentCard } from '@/src/features/ContentCard';
 import { openWeb } from '@/src/features/web/open';
 import { startingPrice } from '@/src/lib/catalog';
 import { API_BASE_URL } from '@/src/lib/config';
@@ -322,28 +322,22 @@ export function QuickServices({ catalog }: { catalog: Catalog | undefined }) {
 
 // --------------------------------------------------------------- offers
 
-/** The newest offer from Admin → Content, as a large image card. */
-export function OfferHighlight({ offers }: { offers: ContentItem[] }) {
-  const offer = offers[0];
+/**
+ * «عروض وأخبار شاشتنا»: the newest offer large, then up to two more offers or
+ * announcements, from Admin → Content; «الكل» opens every one.
+ */
+export function ContentHighlights({ content }: { content: Content | undefined }) {
+  const items = [...(content?.offers ?? []), ...(content?.announcements ?? [])];
 
-  if (!offer) return null;
+  if (!items.length) return null;
 
   return (
-    <View style={styles.section}>
-      <Heading title="عروض شاشتنا" icon="local-fire-department" action={offers.length > 1 ? 'كل العروض' : undefined} onAction={() => router.push('/notifications')} />
-      <Panel onPress={() => router.push(`/content/${offer.id}`)} accessibilityLabel={offer.title} style={styles.offer} testID="offer-highlight">
-        {offer.imageUrl ? <Image source={offer.imageUrl} style={styles.offerImage} contentFit="cover" /> : null}
-        <View style={styles.offerBody}>
-          <Text variant="heading" weight="bold">
-            {offer.title}
-          </Text>
-          {offer.description ? (
-            <Text variant="caption" color={colors.ink2} numberOfLines={3}>
-              {offer.description}
-            </Text>
-          ) : null}
-        </View>
-      </Panel>
+    <View style={styles.section} testID="content-highlights">
+      <Heading title="عروض وأخبار شاشتنا" icon="local-fire-department" action={items.length > 3 ? 'شوف الكل' : undefined} onAction={() => router.push('/offers')} />
+      {items.slice(0, 3).map((item, index) => (
+        <ContentCard key={item.id} item={item} large={index === 0} />
+      ))}
+      {items.length > 3 ? <Button title={`كل العروض والأخبار (${items.length})`} variant="glass" compact onPress={() => router.push('/offers')} /> : null}
     </View>
   );
 }
@@ -435,9 +429,6 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
   service: { width: '48%', flexGrow: 1, gap: space.md, padding: 14, justifyContent: 'space-between' },
   player: { experimental_backgroundImage: `linear-gradient(225deg, ${rgba(colors.brand, 0.2)}, ${colors.surface})` },
-  offer: { padding: 0, overflow: 'hidden' },
-  offerImage: { width: '100%', aspectRatio: 16 / 9, backgroundColor: colors.surface2 },
-  offerBody: { padding: space.lg, gap: space.xs },
   contact: { gap: 14 },
   channels: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
   channel: {

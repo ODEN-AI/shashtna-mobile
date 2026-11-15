@@ -288,6 +288,45 @@ describe('payment', () => {
   });
 });
 
+describe('offers and news', () => {
+  const item = (id: number, kind: 'OFFER' | 'ANNOUNCEMENT', title: string) => ({
+    id,
+    kind,
+    title,
+    description: 'تفاصيل',
+    imageUrl: null,
+    style: 'default',
+    placement: 'home',
+    priority: 0,
+    startsAt: null,
+    endsAt: null,
+    updatedAt: new Date().toISOString(),
+    cta: null,
+  });
+  const content = {
+    offers: [item(1, 'OFFER', 'خصم الصيف'), item(2, 'OFFER', 'عرض العائلة')],
+    announcements: [item(3, 'ANNOUNCEMENT', 'سيرفر جديد'), item(4, 'ANNOUNCEMENT', 'تحديث المشغل')],
+  };
+
+  it('the home shows offers and announcements from the dashboard, and «شوف الكل» lists every one', async () => {
+    const { screen } = await startApp({ signedIn: true, backend: { content } });
+
+    const section = await screen.findByTestId('content-highlights');
+    within(section).getByText('خصم الصيف');
+    within(section).getByText('سيرفر جديد');
+
+    fireEvent.press(within(section).getByText('شوف الكل'));
+    const list = await screen.findByTestId('offers-list');
+    for (const title of ['خصم الصيف', 'عرض العائلة', 'سيرفر جديد', 'تحديث المشغل']) within(list).getByText(title);
+  });
+
+  it('guests see them too', async () => {
+    const { screen } = await startApp({ backend: { content } });
+    const section = await screen.findByTestId('content-highlights');
+    within(section).getByText('خصم الصيف');
+  });
+});
+
 describe('bottom navigation', () => {
   it('has the five Stitch tabs with «اشتراكي» raised in the middle', async () => {
     const { screen } = await startApp({ signedIn: true });
