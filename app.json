@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "شاشتنا",
-    "slug": "shashtna",
+    "slug": "abd-al-rahman-amer",
     "scheme": "shashtna",
     "version": "2.1.0",
     "orientation": "portrait",
@@ -24,6 +24,7 @@
     },
     "android": {
       "package": "app.shashtna.mobile",
+      "googleServicesFile": "./google-services.json",
       "versionCode": 3,
       "adaptiveIcon": {
         "backgroundColor": "#0B0E17",
@@ -99,10 +100,10 @@
     "extra": {
       "apiBaseUrl": "https://shashtna.netlify.app",
       "eas": {
-        "projectId": "bb8ff136-b88e-4986-a256-d5ff004b9603"
+        "projectId": "3caf6560-f9d1-4087-8db2-4ca6b8c595cc"
       },
       "router": {}
     },
-    "owner": "abdulrahman_amer"
+    "owner": "abdulrahmanamers-team"
   }
 }
