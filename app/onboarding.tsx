@@ -151,7 +151,7 @@ export default function OnboardingScreen() {
         <View style={styles.bottom}>
           <View style={styles.dots}>
             {ONBOARDING_STEPS.map((item, i) => (
-              <Pressable key={item.key} onPress={() => go(i)} accessibilityRole="button" accessibilityLabel={`الخطوة ${i + 1}`} hitSlop={8}>
+              <Pressable key={item.key} onPress={() => go(i)} accessibilityRole="button" accessibilityLabel={`الخطوة ${i + 1}`} hitSlop={{ top: 17, bottom: 17, left: 6, right: 6 }}>
                 <View style={[styles.pageDot, i === index && styles.pageDotOn]} />
               </Pressable>
             ))}

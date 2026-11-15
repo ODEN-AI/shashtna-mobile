@@ -1,4 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
@@ -107,7 +108,7 @@ export function PlanCard({ pkg, showPoints, badge }: { pkg: Package; showPoints:
             {options.length > 1 ? 'سعر الاشتراك الجديد' : `سعر ${option.durationLabel}`}
           </Text>
           <View style={styles.row}>
-            <Text variant="heading" weight="bold" color={colors.brandInk} style={styles.nums}>
+            <Text variant="heading" weight="bold" color={colors.ink} style={styles.nums}>
               {formatPrice(price.now)}
             </Text>
             {price.before ? (
@@ -140,6 +141,7 @@ export function VipCard({ pkg, devices }: { pkg: Package; devices: VipDevice[] }
   const renewal = priceOf(option, 'RENEW');
   const compatible = devices.filter((device) => device.packageIds.includes(pkg.id));
   const cheapestDevice = compatible.length ? Math.min(...compatible.map((device) => device.price)) : null;
+  const pictured = [...compatible].sort((a, b) => a.price - b.price).find((device) => device.imageUrl);
 
   return (
     <Panel tone="vip" style={styles.plan} testID={`package-${pkg.slug}`}>
@@ -154,7 +156,11 @@ export function VipCard({ pkg, devices }: { pkg: Package; devices: VipDevice[] }
             </Text>
           ) : null}
         </View>
-        <Tile icon="workspace-premium" color={colors.gold} />
+        {pictured?.imageUrl ? (
+          <Image source={pictured.imageUrl} style={styles.device} contentFit="cover" accessibilityLabel={pictured.name} />
+        ) : (
+          <Tile icon="workspace-premium" color={colors.gold} />
+        )}
       </View>
       <View style={styles.row}>
         <Pill label={option.durationLabel} color={colors.gold} background={rgba(colors.gold, 0.12)} />
@@ -282,10 +288,11 @@ const styles = StyleSheet.create({
   plan: { gap: space.lg },
   floatingBadge: { position: 'absolute', top: -10, end: space.lg },
   lengths: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  length: { flexGrow: 1, flexBasis: '28%', minHeight: 40, paddingHorizontal: space.sm, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface2 },
+  length: { flexGrow: 1, flexBasis: '28%', minHeight: 44, paddingHorizontal: space.sm, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface2 },
   lengthOn: { backgroundColor: colors.brand },
   priceBox: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: space.sm, paddingHorizontal: space.md, borderRadius: radius.sm, backgroundColor: colors.canvasDeep },
   divider: { width: 1, height: 32, backgroundColor: rgba(colors.lineStrong, 0.4) },
+  device: { width: 96, height: 96, borderRadius: radius.md, backgroundColor: colors.surface2 },
   platform: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   platformLogo: { width: 48, height: 48, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
   buy: { marginTop: 6, paddingHorizontal: space.lg, paddingVertical: 6, borderRadius: radius.pill, backgroundColor: colors.brand },

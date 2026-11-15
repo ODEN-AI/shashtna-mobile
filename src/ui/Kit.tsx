@@ -115,7 +115,7 @@ export function Heading({ title, action, onAction, icon }: { title: string; acti
         </Text>
       </View>
       {action ? (
-        <Pressable onPress={onAction} disabled={!onAction} hitSlop={10} accessibilityRole={onAction ? 'button' : undefined}>
+        <Pressable onPress={onAction} disabled={!onAction} hitSlop={10} accessibilityRole={onAction ? 'button' : undefined} style={{ minHeight: 44, justifyContent: 'center' }}>
           <Text variant="micro" color={colors.brandInk}>
             {action}
           </Text>

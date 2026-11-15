@@ -40,6 +40,7 @@ export function Button({
   disabled,
   compact,
   size,
+  color: tint,
   style,
   testID,
   accessibilityHint,
@@ -55,12 +56,14 @@ export function Button({
   compact?: boolean;
   /** lg: the 56dp hero action. */
   size?: 'lg';
+  /** Overrides the variant's text and icon colour (e.g. amber on a glass button). */
+  color?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
   accessibilityHint?: string;
 }) {
   const inactive = disabled || loading;
-  const color = FOREGROUND[variant];
+  const color = tint ?? FOREGROUND[variant];
 
   return (
     <Pressable

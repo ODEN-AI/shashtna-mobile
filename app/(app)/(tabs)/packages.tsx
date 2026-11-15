@@ -81,7 +81,7 @@ export default function PackagesScreen() {
                       style={[styles.chip, on && styles.chipOn]}
                       testID={`package-filter-${item.value}`}
                     >
-                      <Text variant="label" color={on ? colors.inkOnLight : colors.ink2}>
+                      <Text variant="label" color={on ? colors.onBrand : colors.ink2}>
                         {item.label}
                       </Text>
                     </Pressable>
@@ -177,8 +177,8 @@ const styles = StyleSheet.create({
   chipsWrap: { marginHorizontal: -space.lg, flexGrow: 0 },
   chips: { gap: space.sm, paddingHorizontal: space.lg },
   chip: { minHeight: 44, paddingHorizontal: space.lg, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.surface3 },
-  chipOn: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
+  chipOn: { backgroundColor: colors.brand, borderColor: colors.brand },
   section: { gap: space.lg },
   help: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  talk: { paddingHorizontal: space.md, paddingVertical: 6, borderRadius: radius.sm, backgroundColor: colors.surface3 },
+  talk: { minHeight: 44, justifyContent: 'center', paddingHorizontal: space.md, paddingVertical: 6, borderRadius: radius.sm, backgroundColor: colors.surface3 },
 });

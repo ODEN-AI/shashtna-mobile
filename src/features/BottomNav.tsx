@@ -5,7 +5,6 @@ import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { gradientStyle, linear } from '@/src/ui/gradient';
 import { Text } from '@/src/ui/Text';
 import { colors, tabBar } from '@/src/ui/theme';
 
@@ -21,7 +20,7 @@ export const NAV_TABS: { name: string; icon: IconName; raised?: boolean }[] = [
   { name: 'account', icon: 'account-circle' },
 ];
 
-const RAISED = gradientStyle(linear(45, [colors.brand, colors.brand, colors.sky]));
+const RAISED = { backgroundColor: colors.brand };
 
 /**
  * Stitch navigation bar: deep navy, five destinations; «اشتراكي» is a raised

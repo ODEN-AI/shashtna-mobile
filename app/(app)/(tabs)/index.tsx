@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   vipChip: { alignSelf: 'center', paddingVertical: 4 },
   bell: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
   bellDot: { position: 'absolute', top: 10, start: 10, width: 8, height: 8, borderRadius: 4, backgroundColor: colors.dangerStrong, borderWidth: 2, borderColor: colors.canvasDeep },
-  more: { alignSelf: 'flex-start', minHeight: 32, justifyContent: 'center', marginTop: -space.md },
+  more: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center', marginTop: -space.md },
   hero: { gap: space.sm, padding: space.xl, overflow: 'hidden' },
   glow: { position: 'absolute', width: 192, height: 192, borderRadius: 96 },
   glowBlue: { top: -48, start: -48, backgroundColor: rgba(colors.brand, 0.12) },

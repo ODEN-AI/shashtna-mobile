@@ -91,6 +91,7 @@ function MySubscriptions() {
                   title={lookOf(main) === 'ended' ? 'رجّع اشتراكك' : 'تجديد'}
                   icon="flash-outline"
                   variant="glass"
+                  color={colors.amber}
                   onPress={() => renew(main)}
                   style={styles.flex}
                   testID="subscription-renew"

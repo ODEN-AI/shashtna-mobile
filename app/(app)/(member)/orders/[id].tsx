@@ -173,7 +173,7 @@ function OrderBody({ order }: { order: OrderDetail }) {
         variant="glass"
         onPress={() => router.push({ pathname: '/support/new', params: { orderId: String(order.id), category: 'payment' } })}
       />
-      <Button title="الرجوع للرئيسية" icon="home-outline" variant="ghost" onPress={() => router.navigate('/')} />
+      <Button title="الرجوع للرئيسية" icon="home-outline" variant="glass" onPress={() => router.navigate('/')} />
 
       {order.canCancel ? (
         <Button
