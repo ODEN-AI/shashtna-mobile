@@ -1,4 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
@@ -41,6 +42,13 @@ export default function PackageScreen() {
   const vip = pkg?.serviceType === 'VIP';
   const points = pkg && option && price && loyalty.data?.enabled && mode !== 'RENEW' ? pointsFor(price.now, option.pointsEarned, pkg.serviceType) : null;
   const bestValue = bestPerMonth(options, mode);
+  // VIP without its own image shows a compatible device; a platform shows its group's logo.
+  const art =
+    pkg && !pkg.imageUrl
+      ? vip
+        ? (catalog.data?.devices.find((device) => device.packageIds.includes(pkg.id) && device.imageUrl)?.imageUrl ?? null)
+        : (catalog.data?.groups?.find((group) => group.id === pkg.groupId)?.logoUrl ?? null)
+      : null;
   const whatsapp = help.data?.support.whatsapp;
   const hours = help.data?.support.hours;
 
@@ -82,6 +90,11 @@ export default function PackageScreen() {
       >
         {pkg && option && price ? (
           <>
+            {pkg.imageUrl || art ? (
+              <View style={[styles.cover, vip && { backgroundColor: '#EAF2FF' }]}>
+                <Image source={pkg.imageUrl ?? art!} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
+              </View>
+            ) : null}
             <View style={[styles.head, vip && styles.headVip]}>
               <View style={[styles.row, { alignItems: 'flex-start' }]}>
                 <View style={[styles.headIcon, vip && { backgroundColor: '#121316', borderWidth: 1, borderColor: colors.gold }]}>
@@ -280,6 +293,7 @@ const styles = StyleSheet.create({
   top: { paddingHorizontal: space.lg, paddingBottom: space.sm, backgroundColor: colors.canvas },
   close: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface2 },
   content: { paddingHorizontal: space.lg, gap: space.xl },
+  cover: { height: 190, borderRadius: 24, overflow: 'hidden', backgroundColor: colors.surface2 },
   head: { gap: space.md, padding: space.lg, borderRadius: radius.xl, backgroundColor: colors.surface2, overflow: 'hidden' },
   headVip: { backgroundColor: '#1A1C23', borderWidth: 1, borderColor: rgba(colors.gold, 0.35) },
   headIcon: { width: 64, height: 64, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.brand },

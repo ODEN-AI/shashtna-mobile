@@ -19,6 +19,8 @@ export class ApiError extends Error {
     message: string,
     public readonly status = 0,
     public readonly code?: string,
+    /** The API path (no query), shown with the status so a customer's report says where it failed. */
+    public readonly path?: string,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -153,7 +155,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     // Server messages are written for customers; 5xx details are not.
     const message = kind === 'server' ? MESSAGES.server : serverMessage ?? MESSAGES[kind];
 
-    throw new ApiError(kind, message, response.status, typeof data?.code === 'string' ? data.code : undefined);
+    throw new ApiError(kind, message, response.status, typeof data?.code === 'string' ? data.code : undefined, path.split('?')[0]);
   }
 
   return (data ?? {}) as T;

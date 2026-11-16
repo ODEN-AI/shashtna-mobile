@@ -50,7 +50,16 @@ export function ErrorState({ error, onRetry, title }: { error: unknown; onRetry?
       tone={offline ? 'warning' : 'danger'}
       title={title ?? (offline ? 'ماكو اتصال' : 'ما گدرنا نحمّل البيانات')}
       body={errorMessage(error)}
-      action={onRetry ? <Button title="إعادة المحاولة" icon="refresh" variant="glass" onPress={onRetry} /> : null}
+      action={
+        <>
+          {onRetry ? <Button title="إعادة المحاولة" icon="refresh" variant="glass" onPress={onRetry} /> : null}
+          {error instanceof ApiError && error.status ? (
+            <Text variant="micro" color={colors.ink3} center selectable style={{ marginTop: space.sm, writingDirection: 'ltr' }} testID="error-code">
+              {`${error.status}${error.code ? ` ${error.code}` : ''} · ${error.path ?? ''}`}
+            </Text>
+          ) : null}
+        </>
+      }
     />
   );
 }

@@ -59,7 +59,7 @@
     "ios": "expo run:ios",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tests/backend",
     "lint": "expo lint",
-    "test": "jest",
+    "test": "jest --runInBand",
     "doctor": "expo-doctor",
     "export:android": "expo export --platform android",
     "test:backend": "jest --config tests/backend/jest.config.js"
